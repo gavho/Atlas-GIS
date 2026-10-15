@@ -1,0 +1,211 @@
+{
+ "type": "FeatureCollection",
+ "name": "Active Construction (SAMPLE - FAKE DATA)",
+ "features": [
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "C1",
+    "Name": "T5 Landside Utilities",
+    "Status": "Under Construction",
+    "Start": "2026-01-15",
+    "Finish": "2027-09-30",
+    "Contractor": "Sample Contractor A",
+    "Budget": 18500000,
+    "Program": "Terminal",
+    "Height_ft": 20
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -87.8941188,
+       41.974486
+      ],
+      [
+       -87.8904356,
+       41.974486
+      ],
+      [
+       -87.8904356,
+       41.9766801
+      ],
+      [
+       -87.8941188,
+       41.9766801
+      ],
+      [
+       -87.8941188,
+       41.974486
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "C2",
+    "Name": "Taxiway Z Lighting",
+    "Status": "Under Construction",
+    "Start": "2024-04-01",
+    "Finish": "2025-10-31",
+    "Contractor": "Sample Contractor B",
+    "Budget": 4200000,
+    "Program": "Airfield",
+    "Height_ft": 10
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -87.9136396,
+       41.9821655
+      ],
+      [
+       -87.9106931,
+       41.9821655
+      ],
+      [
+       -87.9106931,
+       41.9832626
+      ],
+      [
+       -87.9136396,
+       41.9832626
+      ],
+      [
+       -87.9136396,
+       41.9821655
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "C3",
+    "Name": "Concourse Connector Tunnel",
+    "Status": "Under Construction",
+    "Start": "2026-06-01",
+    "Finish": "2028-12-31",
+    "Contractor": "Sample Contractor C",
+    "Budget": 96000000,
+    "Program": "Terminal",
+    "Height_ft": 25
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -87.9022218,
+       41.9802456
+      ],
+      [
+       -87.9000119,
+       41.9802456
+      ],
+      [
+       -87.9000119,
+       41.9818912
+      ],
+      [
+       -87.9022218,
+       41.9818912
+      ],
+      [
+       -87.9022218,
+       41.9802456
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "C4",
+    "Name": "North Perimeter Road",
+    "Status": "Under Construction",
+    "Start": "2026-03-01",
+    "Finish": null,
+    "Contractor": "Sample Contractor D",
+    "Budget": 7600000,
+    "Program": "Landside",
+    "Height_ft": 10
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -87.9029584,
+       41.9897079
+      ],
+      [
+       -87.8955921,
+       41.9897079
+      ],
+      [
+       -87.8955921,
+       41.9905307
+      ],
+      [
+       -87.9029584,
+       41.9905307
+      ],
+      [
+       -87.9029584,
+       41.9897079
+      ]
+     ]
+    ]
+   }
+  },
+  {
+   "type": "Feature",
+   "properties": {
+    "id": "C5",
+    "Name": "Fuel Hydrant Upgrade",
+    "Status": "Under Construction",
+    "Start": "2027-01-01",
+    "Finish": "2027-12-31",
+    "Contractor": "Sample Contractor E",
+    "Budget": 5100000,
+    "Program": "Support Facilities",
+    "Height_ft": 10
+   },
+   "geometry": {
+    "type": "Polygon",
+    "coordinates": [
+     [
+      [
+       -87.9224792,
+       41.9691377
+      ],
+      [
+       -87.9202693,
+       41.9691377
+      ],
+      [
+       -87.9202693,
+       41.9699605
+      ],
+      [
+       -87.9224792,
+       41.9699605
+      ],
+      [
+       -87.9224792,
+       41.9691377
+      ]
+     ]
+    ]
+   }
+  }
+ ]
+}

@@ -1,0 +1,7 @@
+ID,Description,Type,Lat,Long
+N1,"ILS Localizer 10L (sample)",LOC,41.992862,-87.9103248
+N2,"ILS Glideslope 28R (sample)",GS,41.9917649,-87.8856475
+N3,"ASOS Station (sample)",WX,41.9777772,-87.9081149
+N4,"VOR/DME (sample)",VOR,41.985731,-87.9254258
+N5,"ILS Localizer 27L (sample)",LOC,41.9725661,-87.935002
+N6,"RVR Sensor (sample)",RVR,41.9865538,-87.8952237

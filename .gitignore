@@ -1,0 +1,7 @@
+# Real ORD data — never commit
+/private/
+
+# Local tooling
+node_modules/
+.playwright-cli/
+*.log
