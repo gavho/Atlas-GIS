@@ -251,7 +251,9 @@ body.no-left #draw-toolbar{left:34px}
 .lrow .act{opacity:0} .lrow:hover .act,.lrow .act:focus-visible{opacity:1}
 .lrow .tgt{font:600 9.5px var(--font);letter-spacing:.4px;text-transform:uppercase;color:var(--primary);padding:0 5px;border-radius:4px;background:color-mix(in srgb,var(--primary) 14%,transparent)}
 .legend{padding:0 12px 6px 46px;display:flex;flex-direction:column;gap:2px}
-.legend div{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--ink-subtle)}
+.legend button{display:flex;align-items:center;gap:6px;font:inherit;font-size:11px;color:var(--ink-subtle);background:none;border:0;padding:1px 0;text-align:left;cursor:pointer}
+.legend button:hover{color:var(--ink)}
+.legend button.off{text-decoration:line-through;opacity:.45}
 .legend i{width:9px;height:9px;border-radius:2px;flex:none}
 .left-empty{padding:28px 18px;text-align:center;color:var(--ink-subtle);font-size:13px}
 .left-foot{padding:10px 12px;font-size:11.5px;color:var(--ink-tertiary);line-height:1.45}
@@ -945,10 +947,14 @@ function colorExpr(layer) {
   if (!pal || !pal.length) return base;
   return ['match', ['to-string', ['coalesce', ['get', layer.style.styleBy], '']], ...pal.flat(), base];
 }
+/* Categories switched off in the layer panel legend (style.hidden); only meaningful while styleBy is set */
+const hiddenCats = layer => layer.style.styleBy ? layer.style.hidden || [] : [];
+const hideExpr = layer => { const h = hiddenCats(layer); return h.length ? ['!', ['in', ['to-string', ['coalesce', ['get', layer.style.styleBy], '']], ['literal', h]]] : true; };
 function labelFC(layer, fld) {
   if (!fld) return EMPTY;
+  const h = hiddenCats(layer), by = layer.style.styleBy;
   return { type: 'FeatureCollection', features: layer.data.features.flatMap(f => {
-    const v = f.properties[fld]; if (v == null || v === '' || !f.geometry) return [];
+    const v = f.properties[fld]; if (v == null || v === '' || !f.geometry || (h.length && h.includes(String(f.properties[by] ?? '')))) return [];
     try { const p = turf.pointOnFeature(f); p.properties = { label: String(v), _fid: f.properties._fid }; return [p]; } catch (e) { return []; }
   }) };
 }
@@ -959,7 +965,7 @@ function syncLayer(layer, m = map, o = {}) {
   const V = verOf(m), ids = subIds(layer.id), st = layer.style, main = m === map;
   if (!m.getSource(ids.src)) { m.addSource(ids.src, { type: 'geojson', data: layer.data }); V[ids.src] = layer._v; }
   else if (V[ids.src] !== layer._v) { m.getSource(ids.src).setData(layer.data); V[ids.src] = layer._v; }
-  const lf = o.label !== undefined ? o.label : st.labelField, lblKey = `${layer._v}|${lf}`;
+  const lf = o.label !== undefined ? o.label : st.labelField, lblKey = `${layer._v}|${lf}|${hiddenCats(layer)}`;
   if (!m.getSource(ids.lsrc)) { m.addSource(ids.lsrc, { type: 'geojson', data: labelFC(layer, lf) }); V[ids.lsrc] = lblKey; }
   else if (V[ids.lsrc] !== lblKey) { m.getSource(ids.lsrc).setData(labelFC(layer, lf)); V[ids.lsrc] = lblKey; }
 
@@ -971,7 +977,7 @@ function syncLayer(layer, m = map, o = {}) {
   add(ids.lbl, { type: 'symbol', source: ids.lsrc, layout: { 'text-field': ['get', 'label'], 'text-font': CFG.font, 'text-size': o.labelSize || 11, 'text-max-width': 10, 'text-optional': true } });
 
   const notEditing = main && S.editing?.layerId === layer.id ? ['!=', ['get', '_fid'], S.editing.fid] : true;
-  const filt = g => ['all', g, notEditing];
+  const hide = hideExpr(layer), filt = g => ['all', g, notEditing, hide];
   const sel = ['boolean', ['feature-state', 'selected'], false], hov = ['boolean', ['feature-state', 'hover'], false];
   const color = colorExpr(layer), stroke = st.stroke || color, op = st.opacity ?? 1;
   const visible = o.visible ?? layer.visible, vis = visible ? 'visible' : 'none';
@@ -1494,7 +1500,17 @@ function layerRow(l) {
     syncAllLayers(); changed('layers');
   };
   const pal = styleByPalette(l);
-  if (pal && pal.length) row.append(el(`<div class="legend">${pal.slice(0, 8).map(([v, c]) => `<div><i style="background:${c}"></i>${esc(v)}</div>`).join('')}${pal.length > 8 ? `<div>+${pal.length - 8} more</div>` : ''}</div>`));
+  if (pal && pal.length) {
+    const off = hiddenCats(l);
+    const lg = el(`<div class="legend">${pal.map(([v, c]) => `<button class="${off.includes(v) ? 'off' : ''}" data-v="${esc(v)}" aria-pressed="${!off.includes(v)}" title="${off.includes(v) ? 'Show' : 'Hide'} “${esc(v)}”"><i style="background:${c}"></i>${esc(v)}</button>`).join('')}</div>`);
+    lg.onclick = e => {
+      const b = e.target.closest('button'); if (!b) return;
+      const v = b.dataset.v, h = hiddenCats(l);
+      l.style = { ...l.style, hidden: h.includes(v) ? h.filter(x => x !== v) : [...h, v] };
+      syncLayer(l); changed('layers');
+    };
+    row.append(lg);
+  }
   return row;
 }
 function layerMenu(l, anchor) {
@@ -1543,13 +1559,14 @@ function styleDialog(l) {
   const live = () => { l.style = { ...st }; bumpData(l); syncLayer(l); };
   body.querySelectorAll('[data-k]').forEach(inp => inp.addEventListener('input', () => {
     const k = inp.dataset.k;
+    if (k === 'styleBy') st.hidden = [];
     st[k] = inp.type === 'checkbox' ? inp.checked : inp.type === 'range' ? +inp.value : inp.type === 'number' ? (inp.value === '' ? null : +inp.value) : (inp.value || null);
     const o = body.querySelector(`[data-o="${k}"]`); if (o) o.textContent = st[k];
     live();
   }));
   body.querySelectorAll('[data-reset]').forEach(b => b.onclick = () => { st[b.dataset.reset] = null; live(); });
   body.querySelector('#sp-pick').onchange = e => { const p = S.presets.styles[+e.target.value]; if (p) { Object.assign(st, p.style); live(); syncDialog(); } };
-  body.querySelector('#sp-save').onclick = async () => { const n = await promptDialog('Save style preset', 'Preset name', `${l.name} style`); if (n) { const { labelField, styleBy, heightField, ...rest } = st; S.presets.styles.push({ name: n, style: rest }); changed('presets'); toast('success', `Saved style preset “${n}”`); } };
+  body.querySelector('#sp-save').onclick = async () => { const n = await promptDialog('Save style preset', 'Preset name', `${l.name} style`); if (n) { const { labelField, styleBy, heightField, hidden, ...rest } = st; S.presets.styles.push({ name: n, style: rest }); changed('presets'); toast('success', `Saved style preset “${n}”`); } };
   const syncDialog = () => body.querySelectorAll('[data-k]').forEach(inp => { const v = st[inp.dataset.k]; if (inp.type === 'checkbox') inp.checked = !!v; else if (inp.type === 'color') { if (v) inp.value = toHex(v); } else inp.value = v ?? ''; });
   const before = clone(l.style);
   modal({ title: `Style — ${l.name}`, body, ok: 'Done', cancel: 'Revert' }).then(ok => {
@@ -2003,7 +2020,7 @@ function fieldMenu(l, name, anchor) {
     { sep: true },
     { label: S.selection?.layerId === l.id ? 'Set value for selected…' : 'Set value for all…', icon: 'fields', fn: () => calcDialog(l, name) },
     { label: 'Use as labels', checked: l.style.labelField === name, fn: () => { l.style.labelField = l.style.labelField === name ? null : name; bumpData(l); syncLayer(l); changed('layers'); } },
-    { label: 'Color by this field', checked: l.style.styleBy === name, fn: () => { l.style.styleBy = l.style.styleBy === name ? null : name; bumpData(l); syncLayer(l); changed('layers'); } },
+    { label: 'Color by this field', checked: l.style.styleBy === name, fn: () => { l.style.styleBy = l.style.styleBy === name ? null : name; l.style.hidden = []; bumpData(l); syncLayer(l); changed('layers'); } },
     { label: 'Rename…', icon: 'edit', fn: () => renameFieldDialog(l, name) },
     { label: 'Change type…', icon: 'fields', fn: () => fieldsDialog(l) },
     { sep: true },
