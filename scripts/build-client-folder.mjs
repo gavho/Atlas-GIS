@@ -29,6 +29,7 @@ writeFileSync(join(OUT, 'README.txt'), [
   `${NAME}`, '',
   `To open: double-click "${page}". Use Google Chrome or Microsoft Edge.`,
   'The first launch loads the project automatically (large projects take up to a minute). Keep "project.js" next to the .html file.', '',
+  'To open a separate project.js bundle, use Open Project in the app. Only generated Atlas bundles are accepted; scripts are not run.',
   'Internet: needed for the map libraries and the background map. Your data and drawings never leave this computer.',
   CHANGES_ONLY
     ? 'Your full session is saved in this browser and comes back the next time you open the file. Save changes (or press Ctrl+S) downloads an .atlas.json containing only your added, imported and sketched layers, not the delivered ALP. Send that file back to the project team.'

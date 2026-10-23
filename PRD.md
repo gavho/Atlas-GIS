@@ -43,6 +43,7 @@ Atlas replaces the earlier *ORD Spatial Model* (a CIP planning tool for O'Hare).
 - **FR-IO-6** *Open folder* (Chrome/Edge) imports every dataset in a folder and two levels of subfolders, with all shapefile parts. A folder holding an `.atlas.json` opens as that project. Granted folders are remembered in IndexedDB, so a lone `.shp` from them loads its parts after at most a one-click browser permission.
 - **FR-IO-4** Malformed input shows a toast with details and never crashes the app. Layers over 50k features show a performance tip.
 - **FR-IO-8** A workspace is recognised by its header (`{"schemaVersion":…,"app":"Atlas"`), not only by a `.atlas.json` name. A copy the browser renamed ("x.atlas (1).json") still opens as a workspace instead of failing as GeoJSON.
+- **FR-IO-9** Open Project accepts generated `project.js` bundles (`window.ATLAS_BUNDLE = { id, name, zip | json }`) as well as workspace JSON. The importer parses the generated JSON assignment and never executes JavaScript files.
 - **FR-IO-7** AutoCAD `.dwg` (R13–2018+) opens like any other file. The reader (LibreDWG WASM, about 11 MB) downloads on the first DWG only. Only model-space entities are read:
   - **Geometry:** LINE, (LW)POLYLINE, ARC, ELLIPSE and SPLINE become lines. Closed polylines, CIRCLE, HATCH, SOLID and 3DFACE become polygons. POINT and block INSERTs become points. TEXT and MTEXT become text points. Bulges and arcs are densified at 5°.
   - **Layers:** one drawing becomes up to four layers, `<file> — Polylines / Polygons / Points / Text`. Each layer gets one flat color (no color-by), the Text layer is labeled by `Text`, and category lists start folded. *Color by attribute → Layer* is one step away.
@@ -163,6 +164,7 @@ Sections inside `dist/Atlas-GIS.html`, each marked with a banner comment:
 
 **Bundled project:**
 - **Loading:** a page can ship its project in a sibling `<script src="project.js">` that sets `window.ATLAS_BUNDLE = { id, name, zip | json }`. It opens on first launch, once the map style has loaded.
+- A generated `project.js` can also be opened as a project file; Atlas parses the bundle data without executing it.
 - **Relaunch:** later launches resume the autosave recorded for that bundle id.
 - **Building one:** `scripts/build-client-folder.mjs` builds such a folder for any Atlas-based app.
 

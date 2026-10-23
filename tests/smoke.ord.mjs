@@ -38,10 +38,32 @@ await step('plain app: ORD branding and start screen', async () => {
   if (!r.title.startsWith('ORD ALP') || r.brand !== 'ORD ALP' || !/ORD ALP/.test(r.h1 || '')) throw new Error(JSON.stringify(r));
   await shot('01-start');
 });
+await step('Open Project imports generated JSON and ZIP project.js bundles without executing scripts', async () => {
+  await page.setInputFiles('#ws-input', join(FOLDER, 'project.js'));
+  await page.waitForFunction(() => window.Atlas.S.layers.length === 8, null, { timeout: 30000 });
+  const sample = JSON.parse(readFileSync(`${ROOT}/samples/ord_alp_sample.atlas.json`, 'utf8'));
+  sample.name = 'ORD ALP ZIP sample';
+  const zipData = await A(async text => {
+    const zip = new JSZip();
+    zip.file('ORD ALP/ORD ALP.atlas.json', text);
+    return zip.generateAsync({ type: 'base64' });
+  }, JSON.stringify(sample));
+  const zippedBundle = { id: 'smoke-zip-bundle', name: 'ORD ALP ZIP sample', zip: zipData };
+  const zipScript = join(OUT, 'project-zip.js');
+  writeFileSync(zipScript, `/* smoke test */\nwindow.ATLAS_BUNDLE = ${JSON.stringify(zippedBundle)};\n`);
+  await page.setInputFiles('#ws-input', zipScript);
+  await page.waitForFunction(() => window.Atlas.S.workspace.name === 'ORD ALP ZIP sample' && window.Atlas.S.layers.length === 8, null, { timeout: 30000 });
+  const malicious = join(OUT, 'not-a-project.js');
+  writeFileSync(malicious, 'window.__atlasBundleImportExecuted = true;');
+  await page.setInputFiles('#ws-input', malicious);
+  await page.waitForFunction(() => [...document.querySelectorAll('#toasts .toast')].some(t => /Couldn't open not-a-project\.js/.test(t.textContent)));
+  const executed = await A(() => window.__atlasBundleImportExecuted === true);
+  if (executed) throw new Error('a JavaScript file was executed while importing');
+});
 await step('client folder shows a loading card, then opens its project automatically', async () => {
   await page.goto(`file:///${FOLDER}/Open ORD ALP.html`); await booted();
   const readme = readFileSync(join(FOLDER, 'README.txt'), 'utf8');
-  if (!/only your added, imported and sketched layers/.test(readme) || !/Add its layers to the open ALP/.test(readme)) throw new Error('client instructions do not explain changes-only saving');
+  if (!/only your added, imported and sketched layers/.test(readme) || !/Add its layers to the open ALP/.test(readme) || !/separate project\.js bundle/.test(readme)) throw new Error('client instructions do not explain saving and project bundles');
   const card = await A(() => document.querySelector('#empty-state:not(.hidden) h1')?.textContent || 'gone');
   if (!/Loading the ORD ALP|gone/.test(card)) throw new Error('start screen instead of loading card: ' + card);
   await page.waitForFunction(() => window.Atlas.S.layers.length === 8, null, { timeout: 30000 });
@@ -55,6 +77,16 @@ await step('client folder shows a loading card, then opens its project automatic
   if (await A(() => !document.querySelector('#empty-state').classList.contains('hidden'))) throw new Error('loading card left open');
   const bad = await A(() => [...document.querySelectorAll('#toasts .toast')].map(t => t.textContent).filter(t => /Couldn/.test(t)));
   if (bad.length) throw new Error(bad.join(' | '));
+});
+await step('project.js import in the bundled viewer defaults to adding layers', async () => {
+  const before = await A(() => window.Atlas.S.layers.length);
+  await page.setInputFiles('#ws-input', join(FOLDER, 'project.js'));
+  await page.waitForSelector('#modal-root [name="workspace-import"]');
+  const selected = await A(() => document.querySelector('#modal-root input[value="merge"]').checked);
+  await page.click('#modal-root [data-ok]');
+  await page.waitForFunction(n => window.Atlas.S.layers.length === n, before);
+  const skipped = await A(() => [...document.querySelectorAll('#toasts .toast')].some(t => /already exist and were skipped/.test(t.textContent)));
+  if (!selected || !skipped) throw new Error('project.js did not follow the bundled workspace merge flow');
 });
 await step('default view: first in Views, cannot be deleted, Home returns to it', async () => {
   await page.click('#btn-views');
@@ -269,6 +301,26 @@ await step('Open lets the user replace the ALP with a workspace file', async () 
   await page.click('#modal-root [data-ok]'); await page.waitForTimeout(1000);
   const n = await A(() => window.Atlas.S.layers.length);
   if (n !== before) throw new Error('replace choice did not load the workspace: ' + n);
+});
+await step('an empty saved session falls back to the delivered ALP', async () => {
+  await A(async () => {
+    const A2 = window.Atlas, request = indexedDB.open('keyval-store');
+    const db = await new Promise((resolve, reject) => {
+      request.onupgradeneeded = () => request.result.createObjectStore('keyval');
+      request.onsuccess = () => resolve(request.result);
+      request.onerror = () => reject(request.error);
+    });
+    await new Promise((resolve, reject) => {
+      const tx = db.transaction('keyval', 'readwrite');
+      tx.objectStore('keyval').put({ savedAt: Date.now(), bundle: A2.bundleId, ws: { schemaVersion: 2, app: 'Atlas', name: 'Empty', layers: [] }, bundleLayerIds: [] }, 'ord-alp-autosave');
+      tx.oncomplete = resolve; tx.onerror = () => reject(tx.error);
+    });
+    db.close();
+  });
+  await page.reload(); await booted();
+  await page.waitForFunction(() => window.Atlas.S.layers.length === 8, null, { timeout: 30000 });
+  const r = await A(() => ({ count: window.Atlas.S.layers.length, bundled: window.Atlas.getBundleLayerIds()?.size }));
+  if (r.count !== 8 || r.bundled !== 8) throw new Error(JSON.stringify(r));
 });
 await step('no sample-data entry points', async () => {
   const r = await A(() => ({ text: document.body.innerText, fn: typeof window.loadSamples }));

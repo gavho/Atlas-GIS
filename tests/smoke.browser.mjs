@@ -222,11 +222,12 @@ await step('layer menu groups are collapsed into an expandable tree', async () =
   const move = page.locator('.menu button[role="menuitem"]', { hasText: 'Move to group…' });
   if (!await move.count()) throw new Error('expandable group action is missing');
   if (/Move to “Site/.test(await page.locator('.menu').innerText())) throw new Error('group destinations still fill the layer menu');
-  await move.click();
+  await move.click({ timeout: 3000 });
   if (!await page.locator('.menu-children:not([hidden])').count()) throw new Error('top-level groups did not expand');
-  const site = page.locator('.menu-branch-row:has(> button[role="menuitem"]:text-is("Site")) .menu-expand');
-  await site.click();
-  if (!await page.locator('.menu-branch-row:has(> button[role="menuitem"]:text-is("cad_sample"))').count()) throw new Error('nested groups did not expand');
+  const site = page.locator('.menu-branch-row').filter({ has: page.locator('button[role="menuitem"]', { hasText: /^Site$/ }) }).locator('.menu-expand');
+  await site.click({ timeout: 3000 });
+  const nested = await page.locator('.menu-children:not([hidden])').last().innerText();
+  if (!/cad_sample/.test(nested)) throw new Error('nested groups did not expand: ' + nested);
   await page.keyboard.press('Escape');
 });
 await step('right-click a category: dashed, thicker, new color', async () => {

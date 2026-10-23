@@ -50,9 +50,10 @@ A planner-facing app for reading the O'Hare Airport Layout Plan, built on the At
 - **FR-ORD-7** Legend: while a lens or plan view is active, the on-map legend opens and lists plain-language categories (Changes: its three colors) instead of CAD layer names (`hooks.legend`).
 - **FR-ORD-8** Top bar: the ORD app hides *Set GIS area* (the package sets it), and the brand never collapses.
 - **FR-ORD-9** Client folder: double-clicking `Open ORD ALP.html` opens the bundled project (`project.js` = `window.ATLAS_BUNDLE`, the .atlas.zip as base64).
-  - **Autosave:** the full session (delivered ALP plus client layers) is saved in browser IndexedDB under `ord-alp-autosave`; later launches of the same bundle resume it.
+  - **Autosave:** the full session (delivered ALP plus client layers) is saved in browser IndexedDB under `ord-alp-autosave`; later launches of the same bundle resume it only when it contains layers. An empty or stale autosave falls back to the delivered ALP.
   - **Save changes:** *Save changes* / Ctrl+S writes an `.atlas.json` changes file containing every layer not in the delivered bundle, including imported layers and sketches regardless of their names. It excludes the delivered ALP layers. The client sends that file back to the project team.
   - **Open changes:** opening a workspace in a bundled ORD app asks whether to add its layers to the open ALP or replace the project; adding is the default. Duplicate layer IDs are skipped.
+  - **Project bundles:** Open Project can also open a generated `project.js` file; its embedded workspace is parsed as data and the script is never executed.
   - **New delivery:** the bundle id is a content hash.
   - **Start over:** *More → Reload the original project*.
   - **Real ORD package:** the first launch takes about 6 s, a relaunch about 3 s, and switching views about 1 s.

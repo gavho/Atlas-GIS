@@ -555,7 +555,7 @@ body.presenting #map-legend{bottom:96px}
 <div id="modal-root"></div>
 <div id="menu-root"></div>
 <input type="file" id="file-input" multiple hidden>
-<input type="file" id="ws-input" accept=".json,application/json" hidden>
+<input type="file" id="ws-input" accept=".json,.js,application/json,text/javascript" hidden>
 
 <!-- ======================= WORKERS (classic, created from Blob URLs so they work from file://) ======================= -->
 <script type="text/plain" id="io-worker-src">
@@ -1262,15 +1262,54 @@ const runIO = (type, payload, transfer = []) => new Promise((res, rej) => { cons
 async function pickFiles() {
   if (window.showOpenFilePicker) {
     try {
-      const hs = await window.showOpenFilePicker({ multiple: true, id: 'atlas-data', types: [{ description: 'Spatial data (SHP, KML, KMZ, GeoJSON, CSV, DWG)', accept: { 'application/octet-stream': ['.zip', '.shp', '.dbf', '.shx', '.prj', '.cpg', '.kml', '.kmz', '.geojson', '.json', '.csv', '.dwg'] } }] });
+      const hs = await window.showOpenFilePicker({ multiple: true, id: 'atlas-data', types: [{ description: 'Spatial data and Atlas projects (SHP, KML, KMZ, GeoJSON, CSV, DWG, project.js)', accept: { 'application/octet-stream': ['.zip', '.shp', '.dbf', '.shx', '.prj', '.cpg', '.kml', '.kmz', '.geojson', '.json', '.csv', '.dwg'], 'text/javascript': ['.js'] } }] });
       return handleFiles(await Promise.all(hs.map(async h => Object.assign(await h.getFile(), { _handle: h }))));
     } catch (e) { if (e.name === 'AbortError') return; console.warn('picker fallback', e); }
   }
   $('#file-input').click();
 }
 
+const projectBundleWorkspaces = new WeakMap();
+async function readProjectBundleWorkspace(file) {
+  if (projectBundleWorkspaces.has(file)) return projectBundleWorkspaces.get(file);
+  const pending = (async () => {
+    const source = await file.text();
+    const match = source.match(/^\s*(?:\/\*[\s\S]*?\*\/\s*)?window\.ATLAS_BUNDLE\s*=\s*(\{[\s\S]*\})\s*;\s*$/);
+    if (!match) throw new Error('JavaScript is never executed during import. Choose a generated Atlas project.js bundle.');
+    const bundle = JSON.parse(match[1]);
+    const hasZip = typeof bundle?.zip === 'string';
+    const hasJson = typeof bundle?.json === 'string';
+    if (typeof bundle?.id !== 'string' || typeof bundle?.name !== 'string' || hasZip === hasJson)
+      throw new Error('This is not a valid Atlas project.js bundle.');
+    let workspace;
+    if (hasJson) workspace = JSON.parse(bundle.json);
+    else {
+      if (!/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(bundle.zip))
+        throw new Error('The Atlas project.js bundle contains invalid base64 data.');
+      const raw = atob(bundle.zip), bytes = new Uint8Array(raw.length);
+      for (let i = 0; i < raw.length; i++) bytes[i] = raw.charCodeAt(i);
+      const zip = await JSZip.loadAsync(bytes);
+      const entry = Object.values(zip.files).find(f => !f.dir && /\.atlas\.json$/i.test(f.name));
+      if (!entry) throw new Error('The Atlas project.js bundle has no .atlas.json workspace.');
+      workspace = JSON.parse(await entry.async('string'));
+    }
+    if (!workspace || typeof workspace !== 'object' || !Array.isArray(workspace.layers))
+      throw new Error('The Atlas project.js bundle does not contain a valid workspace.');
+    return workspace;
+  })();
+  projectBundleWorkspaces.set(file, pending);
+  return pending;
+}
 /* A workspace is named *.atlas.json, but a renamed or duplicated copy ("x.atlas (1).json") still starts with the header serialize() writes */
-const isWorkspaceFile = async f => /\.(atlas|ordws)\.json$/i.test(f.name) || (fileExt(f.name) === 'json' && /^\s*\{\s*"schemaVersion"\s*:\s*\d+\s*,\s*"app"\s*:\s*"Atlas"/.test(await f.slice(0, 200).text()));
+const isWorkspaceFile = async f => {
+  if (/\.(atlas|ordws)\.json$/i.test(f.name)) return true;
+  if (fileExt(f.name) === 'json') return /^\s*\{\s*"schemaVersion"\s*:\s*\d+\s*,\s*"app"\s*:\s*"Atlas"/.test(await f.slice(0, 200).text());
+  if (fileExt(f.name) === 'js') {
+    try { await readProjectBundleWorkspace(f); return true; }
+    catch (e) { return /^project\.js$/i.test(f.name); }
+  }
+  return false;
+};
 async function handleFiles(list, opts = {}) {
   let files = [...list];
   if (!files.length) return 0;
@@ -1362,7 +1401,7 @@ async function openFolder() {
   if (!window.showDirectoryPicker) return toast('info', 'Opening a folder needs Chrome or Edge', 'Pick the files together, or a .zip, instead.');
   let dir; try { dir = await window.showDirectoryPicker({ id: 'atlas-folder' }); } catch (e) { return; }
   rememberDir(dir);
-  const files = [], DATA = /\.(shp|dbf|prj|cpg|shx|kml|kmz|geojson|csv|zip|dwg)$|\.(atlas|ordws)\.json$/i;
+  const files = [], DATA = /\.(shp|dbf|prj|cpg|shx|kml|kmz|geojson|csv|zip|dwg)$|(?:^|\/)project\.js$|\.(atlas|ordws)\.json$/i;
   const walk = async (d, path, depth) => {
     for await (const [n, e] of d.entries()) {
       if (e.kind === 'directory') { if (depth < 2 && !n.startsWith('.')) await walk(e, `${path}${n}/`, depth + 1); }
@@ -1370,7 +1409,8 @@ async function openFolder() {
     }
   };
   try { await walk(dir, '', 0); } catch (e) { return toast('error', `Couldn't read “${dir.name}”`, e.message); }
-  const ws = files.find(f => /\.(atlas|ordws)\.json$/i.test(f.name));
+  let ws = null;
+  for (const f of files) if (await isWorkspaceFile(f)) { ws = f; break; }
   if (ws) return openWorkspaceFile(ws, ws._handle);
   if (!files.length) return toast('info', `No map data in “${dir.name}”`, 'Atlas looks for SHP, KML, KMZ, GeoJSON, CSV, DWG and .zip files (and two levels of subfolders).');
   if (await handleFiles(files)) homeView();
@@ -1956,8 +1996,9 @@ function catMenu(l, v, anchor) {
 }
 function layerMenu(l, anchor) {
   const hasMulti = l.data.features.some(f => /^Multi/.test(f.geometry?.type));
-  const groupTree = parent => groupNames().filter(g => parentOf(g) === parent).map(g => {
-    const children = groupNames().some(child => parentOf(child) === g);
+  const groups = groupNames();
+  const groupTree = parent => groups.filter(g => parentOf(g) === parent).map(g => {
+    const children = groups.some(child => parentOf(child) === g);
     return {
       label: lastSeg(g), icon: 'folder', fn: () => setGroup(l, g),
       ...(children ? { submenu: groupTree(g) } : {}),
@@ -3314,7 +3355,7 @@ async function chooseWorkspaceImport(ws) {
 }
 async function openWorkspaceFile(file, handle = null, { fromBundle = false } = {}) {
   try {
-    const ws = JSON.parse(await file.text());
+    const ws = fileExt(file.name) === 'js' ? await readProjectBundleWorkspace(file) : JSON.parse(await file.text());
     if (BUNDLE && !fromBundle) { await chooseWorkspaceImport(migrate(ws)); return; }
     if (S.layers.length && S.workspace.dirty && !await confirmDialog('Replace the current workspace?', 'Unsaved changes in the current workspace will be lost.', 'Open workspace')) return;
     loadWorkspace(ws, { handle });
@@ -3323,7 +3364,7 @@ async function openWorkspaceFile(file, handle = null, { fromBundle = false } = {
 async function openWorkspacePicker() {
   if (window.showOpenFilePicker) {
     try {
-      const [h] = await window.showOpenFilePicker({ id: 'atlas-ws', types: [{ description: 'Atlas workspace', accept: { 'application/json': ['.json'] } }] });
+      const [h] = await window.showOpenFilePicker({ id: 'atlas-ws', types: [{ description: 'Atlas workspace or project bundle', accept: { 'application/json': ['.json'], 'text/javascript': ['.js'] } }] });
       return openWorkspaceFile(await h.getFile(), h);
     } catch (e) { if (e.name === 'AbortError') return; }
   }
@@ -3362,6 +3403,7 @@ async function openBundle() {
   try {
     if (BUNDLE.json) await handleFiles([new File([BUNDLE.json], `${slug(BUNDLE.name)}.atlas.json`)], { noZoom: true, quiet: bundleLoading, fromBundle: true });
     else await handleFiles([new File([bundleBytes()], `${slug(BUNDLE.name)}.atlas.zip`)], { noZoom: true, quiet: bundleLoading, fromBundle: true });
+    if (!S.layers.length) throw new Error('The delivered project did not load any layers.');
     bundleLayerIds = new Set(S.layers.map(l => l.id)); bundleLayerIdsKnown = true; scheduleAutosave();
   } catch (e) { toast('error', `Couldn’t open ${BUNDLE.name}`, e.message); } finally { prog?.close(); }
 }
@@ -3371,7 +3413,7 @@ async function checkAutosave() {
     if (BUNDLE) {
       if (!map.isStyleLoaded()) await new Promise(r => map.once('load', r)); // layers can only be added once the style is ready
       try {
-        if (a?.ws && a.bundle === BUNDLE.id) {
+        if (a?.ws?.layers?.length && a.bundle === BUNDLE.id) {
           if (Array.isArray(a.bundleLayerIds)) { bundleLayerIds = new Set(a.bundleLayerIds); bundleLayerIdsKnown = true; }
           else {
             try { bundleLayerIds = new Set(await readBundledLayerIds()); bundleLayerIdsKnown = true; }
