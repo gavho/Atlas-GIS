@@ -3,7 +3,8 @@
 Read **PRD.md** (requirements, IDs FR-*) and **DESIGN.md** (tokens and component recipes) before making changes.
 
 ## Hard rules
-- **Single file.** The app is `index.html` (HTML + one `<style>` + one `<script type="module">`). No bundler, no npm runtime deps, no build step. Node is fine for dev scripts only (`scripts/`, `tests/`).
+- **ORD ALP** (`dist/ORD-ALP.html`) is generated from Atlas + `ord/` by `node scripts/build-ord-app.mjs`. Never edit it by hand. See **ORD.md** (FR-ORD-*). Atlas changes must keep the `ATLAS_EXT` seam generic.
+- **Single file.** The app is `dist/Atlas-GIS.html` (HTML + one `<style>` + one `<script type="module">`). No bundler, no npm runtime deps, no build step. Node is fine for dev scripts only (`scripts/`, `tests/`).
 - **Must run from `file://`** by double-click. Workers come from inline Blob URLs. Don't use `fetch()` for local files.
 - **Pinned CDN versions** from PRD §6.1 (jsDelivr). Don't upgrade unless asked. If you upgrade, update PRD §6.1.
 - **No user data leaves the machine.** No analytics or telemetry, no uploads, no geocoding. The only network traffic allowed is CDNs, basemap, terrain and font tiles.
@@ -20,6 +21,7 @@ The [Ponytail](../ponytail/skills/ponytail/SKILL.md) rules apply. Make the small
 
 ## Workflow
 - Reference the FR IDs you implemented in your summary and commit messages, for example `FR-FLD-3: retype fields`.
+- After Atlas or `ord/` changes, also run `node scripts/build-ord-app.mjs && node tests/smoke.ord.mjs`. Client hand-off folders come from `scripts/build-client-folder.mjs`; rebuild them after app changes.
 - Run `node --test tests/` (field logic) and `node tests/smoke.browser.mjs` (real browser over `file://`, zero console errors) before saying something works. Look at the screenshots it writes.
 - If Ponytail is installed, run `/ponytail-review` before each commit.
 - Test data lives in `/samples` (synthetic). Never commit real data; `/private` is git-ignored.

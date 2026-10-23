@@ -4,7 +4,7 @@ Lime on neutral, with a dark default and a light mode. The look borrows from **W
 
 **Rule:** the map is the hero. Chrome is quiet neutral. Lime marks only what is *active, selected or primary*.
 
-## 1. Tokens (`:root` in `index.html`)
+## 1. Tokens (`:root` in `dist/Atlas-GIS.html`)
 Use the custom properties and never hard-code UI colors. Data colors for layers come from `CFG.palette`.
 
 | Token | Dark | Light | Use |
@@ -18,6 +18,9 @@ Use the custom properties and never hard-code UI colors. Data colors for layers 
 | `--primary-fill / -fill-hi` | `#7ccf00 / #9ae600` | same | **filled** faces (buttons, active tool). Always dark text (`--on-primary`) |
 | `--on-primary` | `#0a0f00` | `#0a0f00` | text on lime fills (contrast > 9:1) |
 | `--island / --island-ink / --island-sub` | `#000 / #fafafa / #a1a1aa` | same | dynamic-island pills, map tooltips |
+> The ORD ALP overrides these tokens with the CDA palette in `ord/ord.css` (ORD.md FR-ORD-11). Atlas itself keeps lime-on-neutral.
+
+| `--select` | `#38a3ff` | `#0a6cff` | map selection and hover outline (never a fill) |
 | `--glass` | `rgba(15,15,17,.78)` | `rgba(255,255,255,.82)` | floating panels, menus, toasts |
 | `--glow` | lime ring + 22px bloom | softer | primary hover, active tool, brand mark |
 | `--danger / --warn / --success` | `#f87171 / #fbbf24 / #7ccf00` | `#dc2626 / #b45309 / #5ea500` | toasts, destructive actions |

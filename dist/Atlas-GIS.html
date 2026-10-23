@@ -35,6 +35,7 @@
   --canvas:#09090b; --surface-1:#0f0f11; --surface-2:#151517; --surface-3:#1b1b1e; --surface-4:#232327;
   --hairline:#232327; --hairline-strong:#2f2f34; --hairline-tertiary:#3d3d43;
   --ink:#fafafa; --ink-muted:#d4d4d8; --ink-subtle:#8b8b94; --ink-tertiary:#5f5f68;
+  --select:#38a3ff;
   --primary:#7ccf00; --primary-hover:#9ae600; --primary-soft:#d9f99d; --primary-fill:#7ccf00; --primary-fill-hi:#9ae600; --primary-focus:rgba(124,207,0,.45); --on-primary:#0a0f00;
   --glass:rgba(15,15,17,.78); --scrim:rgba(0,0,0,.6);
   --island:#000000; --island-ink:#fafafa; --island-sub:#a1a1aa;
@@ -54,6 +55,7 @@
   --canvas:#fafafa; --surface-1:#ffffff; --surface-2:#f6f6f7; --surface-3:#efeff1; --surface-4:#e6e6e9;
   --hairline:#e4e4e7; --hairline-strong:#d4d4d8; --hairline-tertiary:#c4c4c9;
   --ink:#0a0a0b; --ink-muted:#3f3f46; --ink-subtle:#6b6b74; --ink-tertiary:#9f9fa8;
+  --select:#0a6cff;
   --primary:#5ea500; --primary-hover:#497d00; --primary-soft:#ecfccb; --primary-fill:#7ccf00; --primary-fill-hi:#9ae600; --primary-focus:rgba(94,165,0,.4); --on-primary:#0a0f00;
   --glass:rgba(255,255,255,.82); --scrim:rgba(10,10,11,.3);
   --tex-hi:rgba(255,255,255,.9); --tex-lo:rgba(10,10,11,.06);
@@ -143,8 +145,9 @@ body.perf *,body.perf *::before,body.perf *::after{animation:none!important;tran
 #app{display:grid;grid-template-rows:var(--top-h) 1fr var(--status-h);height:100%}
 #topbar{display:flex;align-items:center;gap:10px;padding:0 12px;background:var(--surface-1);border-bottom:1px solid var(--hairline);min-width:0;z-index:5}
 .brand{display:flex;align-items:center;gap:10px;min-width:0;margin-right:6px}
+.brand>.hide-xs{min-width:0;overflow:hidden}
 .brand-mark{width:30px;height:30px;border-radius:9px;background:var(--island);display:grid;place-items:center;flex:none;color:var(--primary);box-shadow:var(--glow)}
-.brand-name{font-weight:700;font-size:14px;letter-spacing:-.2px;line-height:1.1;white-space:nowrap}
+.brand-name{font-weight:700;font-size:14px;letter-spacing:-.2px;line-height:1.1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .ws{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--ink-subtle);line-height:1.2}
 #ws-name{outline:none;border-radius:3px;padding:0 2px;margin:0 -2px;max-width:220px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 #ws-name:hover{background:var(--surface-3)} #ws-name:focus{background:var(--surface-3);color:var(--ink)}
@@ -161,6 +164,14 @@ body.no-right #main{grid-template-columns:var(--left-w) 1fr 0}
 body.no-left.no-right #main{grid-template-columns:0 1fr 0}
 .panel{background:var(--surface-1);min-width:0;min-height:0;display:flex;flex-direction:column;overflow:hidden}
 #left{border-right:1px solid var(--hairline)} #right{border-left:1px solid var(--hairline)}
+#left,#right,#bottom{position:relative}
+.rsz{position:absolute;z-index:6;touch-action:none;transition:background .15s}
+.rsz[data-edge=r]{top:0;bottom:0;right:0;width:5px;cursor:col-resize}
+.rsz[data-edge=l]{top:0;bottom:0;left:0;width:5px;cursor:col-resize}
+.rsz[data-edge=t]{left:0;right:0;top:0;height:5px;cursor:row-resize}
+.rsz:hover,.rsz:focus-visible,.rsz.on{background:color-mix(in srgb,var(--primary) 55%,transparent);outline:none}
+body.resizing{user-select:none}
+body.resizing #map{pointer-events:none}
 body.no-left #left,body.no-right #right{border:0}
 .panel-head{display:flex;align-items:center;gap:6px;height:42px;padding:0 8px 0 14px;border-bottom:1px solid var(--hairline);flex:none}
 .panel-title{font-weight:600;font-size:13px;flex:1;letter-spacing:-.1px;display:flex;align-items:center;gap:8px}
@@ -200,12 +211,27 @@ body.no-left #draw-toolbar{left:34px}
 #btn-reset:hover{color:var(--ink)}
 #coords{left:56px;bottom:40px;height:36px;display:flex;align-items:center;gap:8px;padding:0 12px;font-size:12px;color:var(--ink-muted);cursor:pointer;user-select:none}
 #coords .crs{font-family:var(--font);font-size:11px;color:var(--ink-subtle);padding:1px 6px;border-radius:4px;background:var(--surface-3)}
-/* Dynamic island (Cult UI dynamic-island): measure / edit / draw status as a black pill */
+/* Dynamic island (Cult UI dynamic-island): edit status as a black pill; the measure chip uses theme surfaces so it reads on dark basemaps */
 #measure-chip,#edit-bar{left:50%;top:12px;transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:6px 8px 6px 16px;min-height:40px;font-size:13px;white-space:nowrap;border-radius:22px;background:var(--island);color:var(--island-ink);border:1px solid rgba(255,255,255,.08);backdrop-filter:none;box-shadow:0 10px 30px rgba(0,0,0,.35);animation:island .45s var(--ease-island)}
 #measure-chip>*,#edit-bar>*{animation:blurin .35s ease-out}
 @keyframes island{from{opacity:0;transform:translateX(-50%) scale(.55,.8)}}
-#measure-chip .v{font-family:var(--mono);color:var(--primary-hover)}
-#measure-chip .hint,#edit-bar .hint{color:var(--island-sub);font-size:12px}
+#measure-chip{background:var(--surface-2);color:var(--ink);border:1px solid var(--hairline-strong);box-shadow:var(--shadow), inset 0 1px 0 var(--tex-hi)}
+#measure-chip .v{font-family:var(--mono);font-weight:600;color:var(--ink)}
+#measure-chip .v+.v::before{content:'·';margin-right:10px;color:var(--ink-tertiary);font-weight:400}
+#measure-chip .hint{color:var(--ink-subtle);font-size:12px}
+#edit-bar .hint{color:var(--island-sub);font-size:12px}
+#measure-tip{position:absolute;z-index:4;pointer-events:none;transform:translate(14px,-130%);padding:3px 8px;border-radius:6px;background:var(--surface-2);color:var(--ink);border:1px solid var(--hairline-strong);box-shadow:var(--shadow);font:600 12px var(--mono);white-space:nowrap}
+#tour{position:fixed;inset:0;z-index:60;pointer-events:none}
+.tour-spot{position:fixed;border-radius:var(--r-md,10px);box-shadow:0 0 0 9999px color-mix(in srgb,var(--canvas) 55%,transparent),0 0 0 2px var(--primary);transition:all .25s var(--ease-island)}
+.tour-card{position:fixed;width:min(340px,calc(100vw - 24px));padding:14px 16px 12px;border-radius:var(--r-lg);background:var(--surface-2);color:var(--ink);border:1px solid var(--hairline-strong);box-shadow:var(--shadow);pointer-events:auto}
+.tour-card .tour-k{font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--primary)}
+.tour-card h4{margin:6px 0 6px;font-size:15px}
+.tour-card p{margin:0 0 12px;font-size:13px;line-height:1.5;color:var(--ink-muted)}
+.tour-card p b{color:var(--ink)}
+.tour-foot{display:flex;gap:6px;align-items:center}
+.tour-foot span{flex:1}
+#measure-tip .s{color:var(--ink-subtle);font-weight:400;margin-left:6px}
+body.presenting #measure-tip{display:none!important}
 #measure-chip .ic,#edit-bar .ic{color:var(--primary)}
 #edit-bar .btn.ghost{color:var(--island-sub)} #edit-bar .btn.ghost:hover{background:rgba(255,255,255,.08);color:var(--island-ink)}
 #drop-overlay{position:absolute;inset:10px;z-index:20;border:2px dashed var(--primary);border-radius:var(--r-lg);background:color-mix(in srgb,var(--canvas) 70%,transparent);display:grid;place-items:center;pointer-events:none;box-shadow:inset 0 0 60px -10px var(--primary-focus)}
@@ -216,6 +242,9 @@ body.no-left #draw-toolbar{left:34px}
 #empty-state p{margin:0 0 18px;color:var(--ink-subtle);font-size:14px}
 #empty-state .actions{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}
 #empty-state .fmts{display:flex;flex-wrap:wrap;gap:6px}
+.loadbar{position:relative;height:4px;border-radius:2px;overflow:hidden;background:var(--surface-3)}
+.loadbar i{position:absolute;inset:0 auto 0 0;width:35%;border-radius:2px;background:var(--primary);animation:loadbar 1.3s ease-in-out infinite}
+@keyframes loadbar{from{left:-35%}to{left:100%}}
 .chip-tag{font:500 11px var(--mono);padding:2px 7px;border-radius:5px;border:1px solid var(--hairline-strong);color:var(--ink-subtle)}
 .restore{display:flex;align-items:center;gap:10px;padding:10px 12px;margin:-4px 0 16px;border-radius:var(--r-md);background:var(--surface-3);border:1px solid var(--hairline-strong);font-size:13px}
 .restore div{flex:1;color:var(--ink-muted)}
@@ -246,13 +275,38 @@ body.no-left #draw-toolbar{left:34px}
 .lrow .sw{width:12px;height:12px;border-radius:4px;flex:none;border:1px solid rgba(255,255,255,.15)}
 .lrow .nm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-size:13px}
 .lrow.off .nm,.lrow.off .sw{opacity:.4}
+.lrow.q-on{background:color-mix(in srgb,var(--primary) 9%,transparent)}
+.lrow.q-on .cnt{color:var(--primary);font-weight:600}
+.lrow.q-off .nm,.lrow.q-off .sw,.lrow.q-off .cnt{opacity:.38}
 .lrow .cnt{font:400 11px var(--mono);color:var(--ink-subtle)}
 .lrow .icon-btn{width:24px;height:24px}
 .lrow .act{opacity:0} .lrow:hover .act,.lrow .act:focus-visible{opacity:1}
 .lrow .tgt{font:600 9.5px var(--font);letter-spacing:.4px;text-transform:uppercase;color:var(--primary);padding:0 5px;border-radius:4px;background:color-mix(in srgb,var(--primary) 14%,transparent)}
+.focus-bar{display:flex;align-items:center;gap:8px;margin:4px 6px 6px;padding:4px 4px 4px 10px;border-radius:var(--r-sm);font-size:12px;color:var(--ink-muted);background:color-mix(in srgb,var(--primary) 10%,transparent);border:1px solid color-mix(in srgb,var(--primary) 30%,transparent)}
+.focus-bar span{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.focus-bar b{color:var(--ink)}
+.lrow.dim .nm{color:var(--ink-subtle)}
+#layer-list .lrow{margin-left:calc(6px + var(--d,0) * 18px)}
+.lgroup.ghidden>:not(.ghead){opacity:.45}
+.gempty{margin:0 6px 4px calc(6px + var(--d,0) * 18px);padding:6px 10px;font-size:12px;color:var(--ink-tertiary);border:1px dashed var(--hairline-strong);border-radius:var(--r-sm)}
+#layer-list .legend{padding-left:calc(46px + var(--d,0) * 18px)}
+.lrow .tw .ic{transition:transform .15s}
+.lrow .tw[aria-expanded="false"] .ic{transform:rotate(-90deg)}
+.ghead.drag-into{box-shadow:inset 0 0 0 1px var(--primary)}
+.icon-pick{display:flex;flex-wrap:wrap;gap:4px}
+.icon-pick label{display:grid;place-items:center;width:34px;height:34px;border-radius:var(--r-sm);border:1px solid var(--hairline);color:var(--ink-muted);cursor:pointer}
+.icon-pick input{position:absolute;opacity:0;pointer-events:none}
+.icon-pick label:has(input:checked){border-color:var(--primary);color:var(--ink);background:var(--surface-3)}
+.icon-pick label:has(input:focus-visible){box-shadow:0 0 0 2px var(--primary-focus)}
+.ghead .gi{display:flex;color:var(--ink-tertiary)}
+.ghead .nm{font-weight:600}
 .legend{padding:0 12px 6px 46px;display:flex;flex-direction:column;gap:2px}
 .legend button{display:flex;align-items:center;gap:6px;font:inherit;font-size:11px;color:var(--ink-subtle);background:none;border:0;padding:1px 0;text-align:left;cursor:pointer}
 .legend button:hover{color:var(--ink)}
+.cat-box{display:flex;flex-direction:column;gap:4px;max-height:240px;overflow:auto}
+.cat-row{display:grid;grid-template-columns:1fr 36px 64px 64px;gap:6px;align-items:center}
+.cat-row .nm{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.cat-row .input{height:28px;padding:0 4px}
 .legend button.off{text-decoration:line-through;opacity:.45}
 .legend i{width:9px;height:9px;border-radius:2px;flex:none}
 .left-empty{padding:28px 18px;text-align:center;color:var(--ink-subtle);font-size:13px}
@@ -322,6 +376,12 @@ table.attr tr.sel td.fid{box-shadow:inset 3px 0 0 var(--primary)}
 .menu button.danger{color:var(--danger)}
 .menu button .sc{margin-left:auto;font:11px var(--mono);color:var(--ink-tertiary)}
 .menu button .ck{width:14px;color:var(--primary)}
+.menu-branch{width:100%}
+.menu-branch-row{display:flex;align-items:center}
+.menu-branch-row>button:first-child{flex:1;min-width:0}
+.menu-branch-row .menu-expand{width:28px;flex:none;justify-content:center}
+.menu-children{margin-left:11px;padding-left:9px;border-left:1px solid var(--hairline)}
+.menu-children[hidden]{display:none}
 .menu .sep{height:1px;background:var(--hairline);margin:4px 2px}
 .menu .mh{font-size:11px;font-weight:600;letter-spacing:.4px;text-transform:uppercase;color:var(--ink-tertiary);padding:6px 10px 2px}
 .palette{width:min(600px,100%);align-self:start;margin-top:12vh;transform-origin:top center}
@@ -346,6 +406,8 @@ table.attr tr.sel td.fid{box-shadow:inset 3px 0 0 var(--primary)}
 .lg-row{display:flex;align-items:center;gap:8px;min-height:20px;color:var(--ink-muted)}
 .lg-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .lg-row.sub{padding-left:14px;font-size:11.5px;color:var(--ink-subtle)}
+.lg-btn{width:100%;border:0;background:none;font:inherit;text-align:left;padding:1px 4px;margin:0 -4px;border-radius:var(--r-sm);cursor:pointer}
+.lg-btn:hover,.lg-btn:focus-visible{background:var(--surface-3);color:var(--ink);outline:none}
 .sw-f{width:18px;height:11px;border:1.5px solid;border-radius:2px;flex:none}
 .sw-l{width:18px;height:3px;border-radius:2px;flex:none}
 .sw-l.dash{background:repeating-linear-gradient(90deg,var(--ink-subtle) 0 4px,transparent 4px 7px)}
@@ -435,10 +497,11 @@ body.presenting #map-legend{bottom:96px}
   </header>
 
   <main id="main">
-    <aside id="left" class="panel" aria-label="Layers">
+    <aside id="left" class="panel" aria-label="Layers"><div class="rsz" data-v="--left-w" data-edge="r" role="separator" aria-orientation="vertical" aria-label="Resize layers panel (arrow keys; double-click resets)" tabindex="0"></div>
       <div class="panel-head"><div class="panel-title">Layers</div>
         <button class="icon-btn sm" id="btn-add-layer" title="Open files" aria-label="Open files"></button>
         <button class="icon-btn sm" id="btn-open-folder" title="Open a folder of data" aria-label="Open folder"></button>
+        <button class="icon-btn sm" id="btn-new-group" title="New group (folder)" aria-label="New group"></button>
         <button class="icon-btn sm" id="btn-new-layer" title="New empty layer" aria-label="New empty layer"></button>
         <button class="icon-btn sm" id="btn-close-left" title="Hide panel ([)" aria-label="Hide layers panel"></button>
       </div>
@@ -451,6 +514,7 @@ body.presenting #map-legend{bottom:96px}
         <div id="draw-toolbar" class="floating" role="toolbar" aria-label="Drawing tools"></div>
         <div id="edit-bar" class="floating hidden"></div>
         <div id="measure-chip" class="floating hidden"></div>
+        <div id="measure-tip" class="hidden" aria-hidden="true"></div>
         <button id="btn-reset" class="floating" title="Zoom to GIS area or data (Home)" aria-label="Zoom to GIS area or data"></button>
         <div id="coords" class="floating mono" title="Click to change the coordinate system · right-click the map to copy coordinates"></div>
         <div id="map-legend" class="floating hidden"></div>
@@ -460,7 +524,7 @@ body.presenting #map-legend{bottom:96px}
         <div id="empty-state" class="texture hidden"></div>
         <div id="drop-overlay" class="hidden"><div class="glass"></div></div>
       </div>
-      <div id="bottom" class="panel" aria-label="Attribute table">
+      <div id="bottom" class="panel" aria-label="Attribute table"><div class="rsz" data-v="--bottom-h" data-edge="t" role="separator" aria-orientation="horizontal" aria-label="Resize attribute table (arrow keys; double-click resets)" tabindex="0"></div>
         <div class="panel-head">
           <div class="panel-title" id="bottom-title"></div>
           <button class="icon-btn sm" id="btn-close-bottom" title="Hide table (\)" aria-label="Hide attribute table"></button>
@@ -469,7 +533,7 @@ body.presenting #map-legend{bottom:96px}
       </div>
     </section>
 
-    <aside id="right" class="panel" aria-label="Inspector">
+    <aside id="right" class="panel" aria-label="Inspector"><div class="rsz" data-v="--right-w" data-edge="l" role="separator" aria-orientation="vertical" aria-label="Resize inspector (arrow keys; double-click resets)" tabindex="0"></div>
       <div class="panel-head"><div class="panel-title" id="right-title"></div>
         <button class="icon-btn sm" id="btn-close-right" title="Hide panel (])" aria-label="Hide inspector"></button>
       </div>
@@ -483,7 +547,7 @@ body.presenting #map-legend{bottom:96px}
     <span class="disclaimer">Not survey grade · your data never leaves this computer</span>
     <button class="sb-btn" id="sb-table"></button>
     <button class="sb-btn" id="sb-right"></button>
-    <button class="sb-btn hide-xs" id="sb-help" title="Keyboard shortcuts (?)">?</button>
+    <button class="sb-btn hide-xs" id="sb-help" title="Help, guided tours and shortcuts">?</button>
   </footer>
 </div>
 
@@ -551,6 +615,17 @@ import { get as idbGet, set as idbSet } from 'idb-keyval';
 const maplibregl = window.maplibregl, turf = window.turf, toGeoJSON = window.toGeoJSON, JSZip = window.JSZip, proj4 = window.proj4;
 
 /* ======================= CONFIG ======================= */
+/* Optional extension (set by an app built on Atlas, e.g. dist/ORD-ALP.html): brand, start-screen text, autosave key and hooks.
+   brand: { name, title, mark (svg markup), icon (favicon URL) } · tours(baseTours) → tours · loading: { title, text } while a bundled project opens
+          defaultView: { name, bbox } a built-in view: first in Views (cannot be deleted), what Home returns to, and where a bundled project opens
+   hooks: filter(layer, m) → extra map filter · dim(layer, m) → filter of features drawn faint
+          paint(layer, m) → { color, width, fillOpacity: expressions; dash: filter of features drawn dashed } (any may be omitted)
+          visible(layer) → bool overriding the layer's own eye (undefined = no opinion) · legend() → on-map legend items · legendClick(item, el)
+          layerState(layer) → { on, n } marks layers the extension's current view uses (null = no view)
+          describe(f, layer) → { title, sub } · inspector(f, layer) → Element · editable(layer) → bool · drawTarget(geometryType) → layer · onBoot(api) */
+const EXT = window.ATLAS_EXT || {}, HK = EXT.hooks || {};
+const canEdit = l => !l || !HK.editable || HK.editable(l);
+const editGuard = l => { if (canEdit(l)) return true; toast('info', `“${l.name}” is read-only`, EXT.readOnlyHint || 'This layer can’t be edited here.'); return false; };
 const CFG = {
   world: { center: [-96, 38.5], zoom: 3.3 },
   presetAreas: [{ name: "Chicago O'Hare (ORD)", bbox: [-88.03, 41.915, -87.785, 42.045] }],
@@ -563,7 +638,6 @@ const CFG = {
     imagery: { label: 'Imagery' },
   },
   dem: 'https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png',
-  samples: ['samples/alp_sample.zip', 'samples/projects_sample.kmz', 'samples/construction.geojson', 'samples/navaids.csv'],
   // data colors for new layers (lime first)
   palette: ['#7ccf00', '#22d3ee', '#a78bfa', '#f472b6', '#fbbf24', '#34d399', '#60a5fa', '#fb923c', '#e879f9', '#94a3b8', '#f87171', '#2dd4bf'],
   crsOptions: [
@@ -632,6 +706,7 @@ const I = {
   chevron: '<path d="m6 9 6 6 6-6"/>',
   grip: '<circle cx="9" cy="6" r="1"/><circle cx="15" cy="6" r="1"/><circle cx="9" cy="12" r="1"/><circle cx="15" cy="12" r="1"/><circle cx="9" cy="18" r="1"/><circle cx="15" cy="18" r="1"/>',
   folder: '<path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/>',
+  folderPlus: '<path d="M3 6a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v10a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2Z"/><path d="M12 10v6M9 13h6"/>',
   bookmark: '<path d="M6 3h12v18l-6-4-6 4Z"/>',
   command: '<path d="M9 6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3Z"/>',
   zap: '<path d="M13 2 4 14h7l-1 8 9-12h-7Z"/>',
@@ -711,6 +786,9 @@ const S = {
   settings: { org: '', preparedBy: '', logo: null, pageSize: 'tabloid' },
   present: null,
   layers: [],            // index 0 = top of the draw order
+  groupStyle: {},        // group path → { icon, color }
+  hiddenGroups: [],      // groups switched off with their eye (members keep their own visibility)
+  emptyGroups: [],       // groups created on their own (New group); they stay listed while they hold no layers
   selection: null,       // { layerId, fids: [] } — always within one layer
   editing: null,         // { layerId, fid, tdId }
   presets: { views: [], styles: [] },
@@ -833,9 +911,10 @@ function setTheme(theme) {
   else { applyMode(false); ensureMask(map); syncAllLayers(); ensureOverlayLayers(true); restartDraw(); }
   emit('ui', 'layers');
 }
-function homeView() { // the GIS area, else all data, else the world
+function homeView() { // the built-in default view, else the GIS area, else all data, else the world
+  if (EXT.defaultView) return goDefaultView();
   if (S.ui.area) return fitBbox(S.ui.area.bbox, { padding: 40 });
-  const feats = S.layers.filter(l => l.visible).flatMap(l => l.data.features);
+  const feats = S.layers.filter(shown).flatMap(l => l.data.features);
   if (feats.length) { try { return fitBbox(turf.bbox({ type: 'FeatureCollection', features: feats })); } catch (e) {} }
   map.flyTo({ center: CFG.world.center, zoom: CFG.world.zoom, pitch: 0, bearing: 0, duration: 900 });
 }
@@ -847,9 +926,10 @@ function fitBbox(b, opts = {}) {
 /* Previous extent (Alt+←) */
 const extents = []; let goingBack = false;
 function recordExtent() {
-  if (goingBack) { goingBack = false; return; }
+  if (goingBack) { goingBack = false; scheduleAutosave(); return; }
   const c = map.getCenter(); extents.push({ center: [c.lng, c.lat], zoom: map.getZoom(), bearing: map.getBearing(), pitch: map.getPitch() });
   if (extents.length > 50) extents.shift();
+  scheduleAutosave();
 }
 function previousExtent() {
   if (extents.length < 2) return toast('info', 'No previous extent');
@@ -891,11 +971,11 @@ function applyArea(fly) {
   } catch (e) { console.warn('area', e); }
   ensureMask(map);
 }
-function setArea(area) {
+function setArea(area, { quiet = false } = {}) {
   if (area && !validBbox(area.bbox)) return toast('warn', 'That area is not valid', 'West must be less than east and south less than north, in degrees.');
   S.ui.area = area ? { name: area.name || 'Custom area', bbox: area.bbox.map(v => +(+v).toFixed(6)) } : null;
   applyArea(true); changed('ui');
-  toast(area ? 'success' : 'info', area ? `GIS area locked: ${S.ui.area.name}` : 'GIS area unlocked', area ? 'The map stays inside this area, so only its tiles load.' : 'The map can pan anywhere again.');
+  if (!quiet) toast(area ? 'success' : 'info', area ? `GIS area locked: ${S.ui.area.name}` : 'GIS area unlocked', area ? 'The map stays inside this area, so only its tiles load.' : 'The map can pan anywhere again.');
 }
 const padBbox = (b, f = 0.1, min = 0.005) => { const dx = Math.max((b[2] - b[0]) * f, min), dy = Math.max((b[3] - b[1]) * f, min); return [b[0] - dx, b[1] - dy, b[2] + dx, b[3] + dy].map((v, i) => i % 2 ? Math.max(-85, Math.min(85, v)) : Math.max(-180, Math.min(180, v))); };
 function areaFromLayer(l) { try { setArea({ name: l.name, bbox: padBbox(turf.bbox(l.data)) }); } catch (e) { toast('warn', `“${l.name}” has no extent`); } }
@@ -935,12 +1015,17 @@ function areaMenu(anchor) {
 const G_POLY = ['in', ['geometry-type'], ['literal', ['Polygon', 'MultiPolygon']]];
 const G_LINE = ['in', ['geometry-type'], ['literal', ['Polygon', 'MultiPolygon', 'LineString', 'MultiLineString']]];
 const G_PT = ['in', ['geometry-type'], ['literal', ['Point', 'MultiPoint']]];
-const subIds = id => ({ src: `u-src-${id}`, lsrc: `u-lsrc-${id}`, fill: `u-${id}-fill`, ext: `u-${id}-ext`, line: `u-${id}-line`, pt: `u-${id}-pt`, lbl: `u-${id}-lbl` });
+const subIds = id => ({ src: `u-src-${id}`, lsrc: `u-lsrc-${id}`, fill: `u-${id}-fill`, ext: `u-${id}-ext`, line: `u-${id}-line`, dash: `u-${id}-dash`, pt: `u-${id}-pt`, lbl: `u-${id}-lbl` });
 
 function styleByPalette(layer) {
   const f = layer.style.styleBy; if (!f) return null;
   const vals = [...new Set(layer.data.features.map(x => x.properties[f]).filter(v => v != null && v !== '').map(String))].slice(0, 24);
-  return vals.map((v, i) => [v, CFG.palette[i % CFG.palette.length]]);
+  return vals.map((v, i) => [v, layer.style.cats?.[v]?.color || CFG.palette[i % CFG.palette.length]]);
+}
+/* Per-category override of one style key (style.cats[value][key]), falling back to base */
+function catExpr(layer, key, base) {
+  const by = layer.style.styleBy, e = by ? Object.entries(layer.style.cats || {}).filter(([, o]) => o[key] != null) : [];
+  return e.length ? ['match', ['to-string', ['coalesce', ['get', by], '']], ...e.flatMap(([v, o]) => [v, o[key]]), base] : base;
 }
 function colorExpr(layer) {
   const base = layerColor(layer), pal = styleByPalette(layer);
@@ -955,7 +1040,7 @@ function labelFC(layer, fld) {
   const h = hiddenCats(layer), by = layer.style.styleBy;
   return { type: 'FeatureCollection', features: layer.data.features.flatMap(f => {
     const v = f.properties[fld]; if (v == null || v === '' || !f.geometry || (h.length && h.includes(String(f.properties[by] ?? '')))) return [];
-    try { const p = turf.pointOnFeature(f); p.properties = { label: String(v), _fid: f.properties._fid }; return [p]; } catch (e) { return []; }
+    try { const p = turf.pointOnFeature(f); p.properties = { ...f.properties, label: String(v) }; return [p]; } catch (e) { return []; } // keeps attributes so filters apply to labels too
   }) };
 }
 
@@ -973,64 +1058,81 @@ function syncLayer(layer, m = map, o = {}) {
   add(ids.fill, { type: 'fill', source: ids.src, filter: G_POLY });
   add(ids.ext, { type: 'fill-extrusion', source: ids.src, filter: G_POLY });
   add(ids.line, { type: 'line', source: ids.src, filter: G_LINE, layout: { 'line-join': 'round', 'line-cap': 'round' } });
+  add(ids.dash, { type: 'line', source: ids.src, filter: G_LINE, layout: { 'line-join': 'round' }, paint: { 'line-dasharray': [2.5, 2] } });
   add(ids.pt, { type: 'circle', source: ids.src, filter: G_PT });
   add(ids.lbl, { type: 'symbol', source: ids.lsrc, layout: { 'text-field': ['get', 'label'], 'text-font': CFG.font, 'text-size': o.labelSize || 11, 'text-max-width': 10, 'text-optional': true } });
 
   const notEditing = main && S.editing?.layerId === layer.id ? ['!=', ['get', '_fid'], S.editing.fid] : true;
-  const hide = hideExpr(layer), filt = g => ['all', g, notEditing, hide];
+  const hide = hideExpr(layer), ext = HK.filter?.(layer, m) ?? true, filt = g => ['all', g, notEditing, hide, ext];
   const sel = ['boolean', ['feature-state', 'selected'], false], hov = ['boolean', ['feature-state', 'hover'], false];
-  const color = colorExpr(layer), stroke = st.stroke || color, op = st.opacity ?? 1;
-  const visible = o.visible ?? layer.visible, vis = visible ? 'visible' : 'none';
-  const primary = cssVar('--primary'), primaryHover = cssVar('--primary-hover'), canvas = cssVar('--surface-1');
+  const dim = main && dimmed(layer); // focus mode: everything else turns one flat, muted color
+  const grey = cssVar('--ink-subtle'), fdim = !dim && HK.dim?.(layer, m), xp = (!dim && HK.paint?.(layer, m)) || {}, hc = xp.color; // extension: faint features, own paint
+  const base = dim ? grey : hc || colorExpr(layer), color = fdim ? ['case', fdim, grey, base] : base;
+  const stroke = dim || hc || !st.stroke ? color : fdim ? ['case', fdim, grey, st.stroke] : st.stroke;
+  const op0 = (st.opacity ?? 1) * (dim ? 0.45 : 1), op = fdim ? ['case', fdim, op0 * 0.35, op0] : op0;
+  const visible = o.visible ?? shown(layer), vis = visible ? 'visible' : 'none';
+  const select = cssVar('--select'), canvas = cssVar('--surface-1'); // selection and hover are a blue outline; fills keep their color
   const defH = (st.height ?? 20) * 0.3048, mode = o.mode || S.ui.mode;
   const set = (id, k, v) => m.setPaintProperty(id, k, v);
 
   m.setFilter(ids.fill, filt(G_POLY));
-  set(ids.fill, 'fill-color', ['case', sel, primary, color]);
-  set(ids.fill, 'fill-opacity', ['case', sel, Math.min(0.45, st.fillOpacity * op + 0.1), st.fillOpacity * op]);
+  set(ids.fill, 'fill-color', color);
+  const fo = ['*', xp.fillOpacity ?? catExpr(layer, 'fillOpacity', st.fillOpacity), op], sw = xp.width ?? catExpr(layer, 'width', st.strokeWidth);
+  set(ids.fill, 'fill-opacity', fo);
   m.setLayoutProperty(ids.fill, 'visibility', vis);
 
   m.setFilter(ids.ext, filt(G_POLY));
   set(ids.ext, 'fill-extrusion-color', color);
   set(ids.ext, 'fill-extrusion-height', st.heightField ? ['let', 'h', ['to-number', ['get', st.heightField], -1], ['case', ['>=', ['var', 'h'], 0], ['*', ['var', 'h'], 0.3048], defH]] : defH);
-  set(ids.ext, 'fill-extrusion-opacity', 0.62 * op);
+  set(ids.ext, 'fill-extrusion-opacity', ['*', 0.62, op]);
   m.setLayoutProperty(ids.ext, 'visibility', visible && mode === '3d' && st.extrude ? 'visible' : 'none');
 
-  m.setFilter(ids.line, filt(G_LINE));
-  set(ids.line, 'line-color', ['case', sel, primary, hov, primaryHover, stroke]);
-  set(ids.line, 'line-width', ['case', sel, st.strokeWidth + 2, hov, st.strokeWidth + 1, st.strokeWidth]);
-  set(ids.line, 'line-opacity', op);
+  // line-dasharray can't vary per feature, so dashed categories draw on their own sublayer
+  const dashed = st.styleBy ? Object.entries(st.cats || {}).filter(([, c]) => c.dash).map(([v]) => v) : [];
+  const catDash = dashed.length ? ['in', ['to-string', ['coalesce', ['get', st.styleBy || ''], '']], ['literal', dashed]] : null;
+  const isDash = catDash && xp.dash ? ['any', catDash, xp.dash] : catDash || xp.dash || false;
+  for (const [id, f] of [[ids.line, isDash ? ['all', filt(G_LINE), ['!', isDash]] : filt(G_LINE)], [ids.dash, ['all', filt(G_LINE), isDash]]]) {
+    m.setFilter(id, f);
+    set(id, 'line-color', ['case', sel, select, hov, select, stroke]);
+    set(id, 'line-width', ['case', sel, ['max', 3, ['+', sw, 2]], hov, ['+', sw, 1], sw]);
+    set(id, 'line-opacity', ['case', sel, 1, op]);
+  }
   m.setLayoutProperty(ids.line, 'visibility', vis);
+  m.setLayoutProperty(ids.dash, 'visibility', isDash ? vis : 'none');
 
   m.setFilter(ids.pt, filt(G_PT));
   set(ids.pt, 'circle-color', color);
   set(ids.pt, 'circle-radius', ['case', sel, 8, hov, 7, 5.5]);
-  set(ids.pt, 'circle-stroke-color', ['case', sel, primary, canvas]);
+  set(ids.pt, 'circle-stroke-color', ['case', sel, select, hov, select, canvas]);
   set(ids.pt, 'circle-stroke-width', ['case', sel, 3, 1.5]);
   set(ids.pt, 'circle-opacity', op);
   set(ids.pt, 'circle-stroke-opacity', op);
   m.setLayoutProperty(ids.pt, 'visibility', vis);
 
-  m.setFilter(ids.lbl, ['all', notEditing]);
+  m.setFilter(ids.lbl, ['all', notEditing, ext]);
   set(ids.lbl, 'text-color', cssVar('--ink'));
   set(ids.lbl, 'text-halo-color', cssVar('--canvas'));
   set(ids.lbl, 'text-halo-width', 1.6);
   set(ids.lbl, 'text-opacity', op);
-  m.setLayoutProperty(ids.lbl, 'visibility', visible && lf ? 'visible' : 'none');
+  m.setLayoutProperty(ids.lbl, 'visibility', visible && lf && !dim ? 'visible' : 'none');
 }
+/* Focus mode (S.ui.focus = a layer id or 'g:<group>'): only the focused layer or group keeps its symbology */
+const focused = l => S.ui.focus === l.id || (!!S.ui.focus?.startsWith('g:') && inGroup(l, S.ui.focus.slice(2)));
+const dimmed = l => !!S.ui.focus && !focused(l) && S.layers.some(focused); // a stale focus (layer removed) dims nothing
+function setFocus(f) { S.ui.focus = S.ui.focus === f ? null : f; syncAllLayers(); emit('layers'); }
 function removeLayerFromMap(id, m = map) {
   const ids = subIds(id), V = verOf(m);
-  for (const k of ['lbl', 'pt', 'line', 'ext', 'fill']) if (m.getLayer(ids[k])) m.removeLayer(ids[k]);
+  for (const k of ['lbl', 'pt', 'dash', 'line', 'ext', 'fill']) if (m.getLayer(ids[k])) m.removeLayer(ids[k]);
   for (const k of ['src', 'lsrc']) { if (m.getSource(ids[k])) m.removeSource(ids[k]); delete V[ids[k]]; }
 }
 function stackLayers(m, layers) { // bottom → top: moving each before the anchor stacks them in order
-  [...layers].reverse().forEach(l => { const ids = subIds(l.id); for (const k of ['fill', 'ext', 'line', 'pt', 'lbl']) if (m.getLayer(ids[k])) m.moveLayer(ids[k], 'u-anchor'); });
+  [...layers].reverse().forEach(l => { const ids = subIds(l.id); for (const k of ['fill', 'ext', 'line', 'dash', 'pt', 'lbl']) if (m.getLayer(ids[k])) m.moveLayer(ids[k], 'u-anchor'); });
 }
 function syncAllLayers() {
   if (!map || !map.getLayer('u-anchor')) return;
   S.layers.forEach(l => syncLayer(l));
   stackLayers(map, S.layers);
-  interactiveIds = S.layers.filter(l => l.visible).flatMap(l => { const ids = subIds(l.id); return [ids.pt, ids.line, ids.fill, ids.ext]; });
+  interactiveIds = S.layers.filter(shown).flatMap(l => { const ids = subIds(l.id); return [ids.pt, ids.line, ids.dash, ids.fill, ids.ext]; });
   for (const lyr of map.getStyle().layers) { const mm = lyr.id.match(/^u-(lyr_[a-z0-9]+)-fill$/); if (mm && !layerById(mm[1])) removeLayerFromMap(mm[1]); }
 }
 function bumpData(layer) { layer._v = (layer._v || 0) + 1; }
@@ -1062,7 +1164,7 @@ const clearSelection = () => select(null);
 function selectedFeatures() { const l = layerById(S.selection?.layerId); if (!l) return []; const s = new Set(S.selection.fids); return l.data.features.filter(f => s.has(f.properties._fid)); }
 function zoomToSelection() { const fs = selectedFeatures(); if (!fs.length) return toast('info', 'Nothing selected'); try { fitBbox(turf.bbox({ type: 'FeatureCollection', features: fs })); } catch (e) {} }
 function refFromRendered(f) {
-  const mm = f.layer.id.match(/^u-(.+)-(fill|ext|line|pt)$/); if (!mm) return null;
+  const mm = f.layer.id.match(/^u-(.+)-(fill|ext|line|dash|pt)$/); if (!mm) return null;
   return { layerId: mm[1], fid: f.id ?? f.properties._fid };
 }
 const hitsAt = (pt, r = 3) => interactiveIds.length ? map.queryRenderedFeatures([[pt.x - r, pt.y - r], [pt.x + r, pt.y + r]], { layers: interactiveIds.filter(id => map.getLayer(id)) }) : [];
@@ -1073,14 +1175,15 @@ function onMouseMove(e) {
   mmRaf = requestAnimationFrame(() => {
     mmRaf = 0; const ev = lastMove;
     updateCoords(ev.lngLat);
-    if (measure.mode) { measure.cursor = [ev.lngLat.lng, ev.lngLat.lat]; renderMeasure(); return; }
+    if (measure.mode) { measure.cursor = [ev.lngLat.lng, ev.lngLat.lat]; measure.px = ev.point; renderMeasure(); return; }
     if (S.ui.tool !== 'none' || S.editing || map.isMoving()) { setHover(null); popup.remove(); return; }
     const hits = hitsAt(ev.point, 0), ref = hits.length ? refFromRendered(hits[0]) : null;
     setHover(ref);
     map.getCanvas().style.cursor = ref ? 'pointer' : '';
     if (ref) {
       const layer = layerById(ref.layerId), f = featureOf(layer, ref.fid);
-      popup.setLngLat(ev.lngLat).setHTML(`<div class="t">${esc(featureName(f, layer))}</div><div class="s">${esc(layer?.name)}</div>`).addTo(map);
+      const d = HK.describe?.(f, layer) || { title: featureName(f, layer), sub: layer?.name };
+      popup.setLngLat(ev.lngLat).setHTML(`<div class="t">${esc(d.title)}</div><div class="s">${esc(d.sub)}</div>`).addTo(map);
     } else popup.remove();
   });
 }
@@ -1159,42 +1262,64 @@ const runIO = (type, payload, transfer = []) => new Promise((res, rej) => { cons
 async function pickFiles() {
   if (window.showOpenFilePicker) {
     try {
-      const hs = await window.showOpenFilePicker({ multiple: true, id: 'atlas-data', types: [{ description: 'Spatial data (SHP, KML, KMZ, GeoJSON, CSV)', accept: { 'application/octet-stream': ['.zip', '.shp', '.dbf', '.shx', '.prj', '.cpg', '.kml', '.kmz', '.geojson', '.json', '.csv'] } }] });
+      const hs = await window.showOpenFilePicker({ multiple: true, id: 'atlas-data', types: [{ description: 'Spatial data (SHP, KML, KMZ, GeoJSON, CSV, DWG)', accept: { 'application/octet-stream': ['.zip', '.shp', '.dbf', '.shx', '.prj', '.cpg', '.kml', '.kmz', '.geojson', '.json', '.csv', '.dwg'] } }] });
       return handleFiles(await Promise.all(hs.map(async h => Object.assign(await h.getFile(), { _handle: h }))));
     } catch (e) { if (e.name === 'AbortError') return; console.warn('picker fallback', e); }
   }
   $('#file-input').click();
 }
 
+/* A workspace is named *.atlas.json, but a renamed or duplicated copy ("x.atlas (1).json") still starts with the header serialize() writes */
+const isWorkspaceFile = async f => /\.(atlas|ordws)\.json$/i.test(f.name) || (fileExt(f.name) === 'json' && /^\s*\{\s*"schemaVersion"\s*:\s*\d+\s*,\s*"app"\s*:\s*"Atlas"/.test(await f.slice(0, 200).text()));
 async function handleFiles(list, opts = {}) {
   let files = [...list];
   if (!files.length) return 0;
-  const ws = files.find(f => /\.(atlas|ordws)\.json$/i.test(f.name));
-  if (ws) { await openWorkspaceFile(ws); files = files.filter(f => f !== ws); if (!files.length) return 0; }
+  let ws = null;
+  for (const f of files) if (await isWorkspaceFile(f)) { ws = f; break; }
+  if (ws) { await openWorkspaceFile(ws, null, { fromBundle: opts.fromBundle }); files = files.filter(f => f !== ws); if (!files.length) return 0; }
   const shpParts = new Map(), tasks = [];
   for (const f of files) {
     const ext = fileExt(f.name), isXml = /\.shp\.xml$/i.test(f.name);
     if (isXml || ['shp', 'dbf', 'shx', 'prj', 'cpg', 'sbn', 'sbx'].includes(ext)) {
       const b = baseName(f.name), key = (f._dir || '') + b.toLowerCase();
       const g = shpParts.get(key) || { name: b }; g[isXml ? 'xml' : ext] = f; shpParts.set(key, g);
-    } else tasks.push({ kind: ext, file: f, name: baseName(f.name) });
+    } else tasks.push({ kind: ext, file: f, name: baseName(f.name), fromBundle: opts.fromBundle });
   }
   for (const g of shpParts.values()) { if (g.shp && !(g.dbf && g.prj)) await findSidecars(g); tasks.push({ kind: 'shpset', parts: g, name: g.name }); }
   let added = 0;
-  for (const t of tasks) {
+  batch = tasks.length > 1 ? { left: tasks.length, n: tasks.length, ok: 0, layers: 0, large: 0, outside: 0, failed: [], skipped: {}, mapOD: false } : null;
+  for (const [i, t] of tasks.entries()) {
+    if (batch) batch.left = tasks.length - i; // this file and the ones after it
     const label = t.file?.name || `${t.name}.shp`;
-    const prog = progressToast(`Loading ${label}…`);
+    const prog = opts.quiet ? null : progressToast(`Loading ${label}…`); // quiet: the caller shows its own progress
     try {
       const results = await parseTask(t);
-      prog.close();
-      for (const r of results) if (await finalizeImport(r, opts)) added++;
+      prog?.close();
+      let n = 0; for (const r of results) if (await finalizeImport(r, opts)) n++;
+      added += n; if (batch && n) batch.ok++;
     } catch (e) {
-      prog.close(); console.error(e);
-      toast('error', `Couldn't load ${label}`, e.message || String(e), { detail: e.stack });
+      prog?.close();
+      if (batch) { console.warn(label, e); batch.failed.push(`${label}: ${e.message || e}`); }
+      else { console.error(e); toast('error', `Couldn't load ${label}`, e.message || String(e), { detail: e.stack }); }
     }
   }
+  if (batch) importSummary(batch, opts);
+  batch = null;
   return added;
 }
+function importSummary(b, opts) {
+  const short = m => m.split(/[.(]/)[0].replace(/^[^:]+: /, '').trim().toLowerCase();
+  const sk = Object.entries(b.skipped).map(([k, n]) => `${nf(n)} ${k}`).join(', ');
+  const lines = [`${nf(b.layers)} layer(s) added.`,
+    b.failed.length && `Not loaded: ${b.failed.slice(0, 6).map(f => `${f.split(':')[0]} (${short(f.slice(f.indexOf(':') + 1))})`).join(', ')}${b.failed.length > 6 ? `, +${b.failed.length - 6} more` : ''}.`,
+    sk && `CAD objects left out: ${sk}.`,
+    b.mapOD && 'Some drawings have Map 3D object data, which Atlas can’t read.',
+    b.large && `${b.large} large layer(s): lock a GIS area and turn on performance mode to keep the map smooth.`,
+    b.outside && `${b.outside} layer(s) are outside your GIS area; unlock it to see them.`].filter(Boolean);
+  toast(b.failed.length ? 'warn' : 'success', `Imported ${b.ok} of ${b.n} files`, lines.join(' '), b.failed.length ? { detail: b.failed.join('\n') } : {});
+  if (b.layers && !opts.noZoom) homeView();
+}
+let batch = null; // during a multi-file import: one CRS answer (from) for the rest, and one summary toast instead of one per file
 
 /* Folders the user granted (Open folder, or a lone .shp's folder) are kept in IndexedDB, so a later .shp from the same
    folder loads its .dbf/.prj/.cpg without picking again; the browser may ask once per visit to allow it (Chrome/Edge only). */
@@ -1237,7 +1362,7 @@ async function openFolder() {
   if (!window.showDirectoryPicker) return toast('info', 'Opening a folder needs Chrome or Edge', 'Pick the files together, or a .zip, instead.');
   let dir; try { dir = await window.showDirectoryPicker({ id: 'atlas-folder' }); } catch (e) { return; }
   rememberDir(dir);
-  const files = [], DATA = /\.(shp|dbf|prj|cpg|shx|kml|kmz|geojson|csv|zip)$|\.(atlas|ordws)\.json$/i;
+  const files = [], DATA = /\.(shp|dbf|prj|cpg|shx|kml|kmz|geojson|csv|zip|dwg)$|\.(atlas|ordws)\.json$/i;
   const walk = async (d, path, depth) => {
     for await (const [n, e] of d.entries()) {
       if (e.kind === 'directory') { if (depth < 2 && !n.startsWith('.')) await walk(e, `${path}${n}/`, depth + 1); }
@@ -1247,7 +1372,7 @@ async function openFolder() {
   try { await walk(dir, '', 0); } catch (e) { return toast('error', `Couldn't read “${dir.name}”`, e.message); }
   const ws = files.find(f => /\.(atlas|ordws)\.json$/i.test(f.name));
   if (ws) return openWorkspaceFile(ws, ws._handle);
-  if (!files.length) return toast('info', `No map data in “${dir.name}”`, 'Atlas looks for SHP, KML, KMZ, GeoJSON, CSV and .zip files (and two levels of subfolders).');
+  if (!files.length) return toast('info', `No map data in “${dir.name}”`, 'Atlas looks for SHP, KML, KMZ, GeoJSON, CSV, DWG and .zip files (and two levels of subfolders).');
   if (await handleFiles(files)) homeView();
 }
 async function parseTask(t) {
@@ -1263,7 +1388,7 @@ async function parseTask(t) {
       const zip = await JSZip.loadAsync(await t.file.arrayBuffer());
       const names = Object.keys(zip.files).filter(n => !zip.files[n].dir && !/(^|\/)__MACOSX\//.test(n));
       const wsName = names.find(n => /\.(atlas|ordws)\.json$/i.test(n)); // a project package: open the project, not its shapefiles
-      if (wsName) { await openWorkspaceFile(new File([await zip.file(wsName).async('string')], wsName.split('/').pop())); return []; }
+      if (wsName) { await openWorkspaceFile(new File([await zip.file(wsName).async('string')], wsName.split('/').pop()), null, { fromBundle: t.fromBundle }); return []; }
       const shps = names.filter(n => /\.shp$/i.test(n)), kmls = names.filter(n => /\.kml$/i.test(n)), gjs = names.filter(n => /\.(geo)?json$/i.test(n));
       if (!shps.length && !kmls.length && !gjs.length) throw new Error('No .shp, .kml or .geojson found inside the zip.');
       const out = [];
@@ -1289,8 +1414,9 @@ async function parseTask(t) {
     case 'geojson': case 'json': return [await geojsonToResult(await t.file.text(), t.name, t.file.name)];
     case 'csv': case 'txt': return [await csvToResult(await t.file.text(), t.name, t.file.name)];
     case 'xlsx': case 'xls': throw new Error('Excel files aren’t supported. Save the sheet as CSV (with latitude/longitude columns) first.');
-    case 'dwg': case 'dgn': case 'dxf': throw new Error('CAD files aren’t supported yet. Export to SHP, KMZ or GeoJSON from CAD first.');
-    default: throw new Error(`Unsupported file type “.${t.kind}”. Supported: .zip (shapefile), .shp/.dbf/.prj, .kml, .kmz, .geojson, .json, .csv`);
+    case 'dwg': return cadToResults(t);
+    case 'dgn': case 'dxf': throw new Error('Only DWG CAD files are supported. Save the drawing as DWG, or export SHP, KMZ or GeoJSON from CAD.');
+    default: throw new Error(`Unsupported file type “.${t.kind}”. Supported: .zip (shapefile), .shp/.dbf/.prj, .kml, .kmz, .geojson, .json, .csv, .dwg`);
   }
 }
 
@@ -1345,6 +1471,165 @@ async function csvToResult(text, name, fileName) {
   return ensureWgs({ name, fileName, format: 'csv', crs: null, fc: { type: 'FeatureCollection', features } });
 }
 
+/* DWG → one FeatureCollection in drawing units (reprojected by ensureWgs), then split into layers by cadBucket */
+async function cadToResults(t) {
+  const { lib, Dwg_File_Type } = await needLib('libredwg');
+  let db;
+  try {
+    const ptr = lib.dwg_read_data(await t.file.arrayBuffer(), Dwg_File_Type.DWG);
+    if (!ptr) throw new Error('no drawing data');
+    try { db = lib.convert(ptr); } finally { lib.dwg_free(ptr); }
+  } catch (e) {
+    delete libPromises.libredwg; // a crashed WASM instance is not reused
+    throw new Error(`Couldn’t read this DWG (${e.message}). In CAD, save it as an AutoCAD 2018 DWG and try again.`);
+  }
+  const { fc, skipped, mapOD } = dbToFC(db);
+  const strays = dropStrays(fc); if (strays) skipped['far from the rest of the drawing'] = strays;
+  const sk = Object.entries(skipped).map(([k, n]) => `${nf(n)} ${k}`).join(', ');
+  if (batch) { for (const [k, n] of Object.entries(skipped)) batch.skipped[k] = (batch.skipped[k] || 0) + n; batch.mapOD ||= mapOD; }
+  else {
+    if (sk) toast('info', `${t.name}: some CAD objects skipped`, `${sk}.`);
+    if (mapOD) toast('warn', `${t.name}: Map 3D object data not read`, 'Atlas can’t read AutoCAD Map 3D object data tables. Export to SHP from Map 3D to keep those attributes.');
+  }
+  if (!fc.features.length) throw new Error('No geometry found in the drawing’s model space.');
+  // legends, tables and detail sheets are drawn near 0,0 in drawing units: they have no place on a map
+  if (!looksProjected(fc)) throw new Error('This drawing isn’t georeferenced (its coordinates are small drawing units), so it is probably a legend, table or detail sheet. Skipped.');
+  let group = t.name; for (let i = 2; groupNames().includes(group); i++) group = `${t.name} (${i})`; // same drawing opened twice
+  t = { ...t, name: group };
+  const res = await ensureWgs({ name: t.name, fileName: t.file.name, format: 'dwg', crs: null, fc });
+  const groups = {};
+  for (const f of res.fc.features) (groups[cadBucket(f)] ||= []).push(f);
+  // added bottom-up (each import goes on top), so Text ends up drawn above Points above Polylines above Polygons
+  return ['Polygons', 'Polylines', 'Points', 'Text'].filter(k => groups[k]).map(k => ({ ...res, name: `${t.name} — ${k}`, group: t.name, fc: { type: 'FeatureCollection', features: groups[k] },
+    style: { labelField: k === 'Text' ? 'Text' : null }, legendOpen: false })); // one color per layer; “Color by attribute → Layer” is one click away
+}
+
+// <cad-logic>
+const ACI_BASE = ['#000000', '#ff0000', '#ffff00', '#00ff00', '#00ffff', '#0000ff', '#ff00ff', '#ffffff', '#808080', '#c0c0c0'];
+const ACI_GREY = ['#333333', '#505050', '#696969', '#828282', '#bebebe', '#ffffff'];
+function aciHex(i) { // AutoCAD Color Index → hex; 10–249 follow AutoCAD's hue × shade pattern
+  if (i < 10) return ACI_BASE[i];
+  if (i >= 250) return ACI_GREY[i - 250];
+  const h = Math.floor((i - 10) / 10) * 15, v = [1, 0.65, 0.5, 0.3, 0.15][Math.floor((i % 10) / 2)], s = i % 2 ? 0.5 : 1;
+  const f = n => { const k = (n + h / 60) % 6; return Math.round(255 * v * (1 - s * Math.max(0, Math.min(k, 4 - k, 1)))); };
+  return '#' + [f(5), f(3), f(1)].map(x => x.toString(16).padStart(2, '0')).join('');
+}
+const STEP = Math.PI / 36; // 5° per vertex on arcs
+function arcPts(cx, cy, r, a0, sweep) {
+  const n = Math.max(2, Math.ceil(Math.abs(sweep) / STEP));
+  return Array.from({ length: n + 1 }, (_, i) => [cx + r * Math.cos(a0 + sweep * i / n), cy + r * Math.sin(a0 + sweep * i / n)]);
+}
+function bulgePts(vs, closed) { // polyline vertices with bulges → densified coordinates
+  const out = [];
+  const n = closed ? vs.length : vs.length - 1;
+  for (let i = 0; i < n; i++) {
+    const p = vs[i], q = vs[(i + 1) % vs.length], b = p.bulge || 0;
+    out.push([p.x, p.y]);
+    if (!b) continue;
+    const dx = q.x - p.x, dy = q.y - p.y, d = Math.hypot(dx, dy); if (!d) continue;
+    const ang = 4 * Math.atan(b), h = d / 2 / Math.tan(ang / 2), cx = (p.x + q.x) / 2 - dy / d * h, cy = (p.y + q.y) / 2 + dx / d * h;
+    out.push(...arcPts(cx, cy, Math.hypot(p.x - cx, p.y - cy), Math.atan2(p.y - cy, p.x - cx), ang).slice(1, -1));
+  }
+  if (!closed && vs.length) out.push([vs.at(-1).x, vs.at(-1).y]);
+  return out;
+}
+const cadRing = pts => { const r = pts.map(p => [p[0], p[1]]); if (r.length && (r[0][0] !== r.at(-1)[0] || r[0][1] !== r.at(-1)[1])) r.push([...r[0]]); return r.length >= 4 ? r : null; };
+const cadLine = pts => pts.length >= 2 ? { type: 'LineString', coordinates: pts } : null;
+const cadPoly = pts => { const r = cadRing(pts); return r ? { type: 'Polygon', coordinates: [r] } : null; };
+const xy = p => [p.x, p.y];
+function hatchRings(h) {
+  return (h.boundaryPaths || []).map(bp => {
+    if (bp.vertices) return cadRing(bulgePts(bp.vertices, true));
+    const pts = [];
+    for (const e of bp.edges || []) {
+      if (e.type === 1) pts.push(xy(e.start), xy(e.end));
+      else if (e.type === 2 || e.type === 3) {
+        let a0 = e.startAngle, a1 = e.endAngle; if (a1 <= a0) a1 += 2 * Math.PI;
+        const r = e.type === 2 ? e.radius : Math.hypot(e.end.x, e.end.y), arc = arcPts(e.center.x, e.center.y, r, a0, a1 - a0);
+        pts.push(...(e.isCCW === false ? arc.map(([x, y]) => [x, 2 * e.center.y - y]) : arc));
+      } else if (e.type === 4) pts.push(...(e.fitDatum?.length ? e.fitDatum : e.controlPoints).map(xy));
+    }
+    return cadRing(pts);
+  }).filter(Boolean);
+}
+function cadGeom(e) {
+  // LibreDWG LWPOLYLINE flags: 512 = closed (1 = has extrusion, 256 = plinegen); POLYLINE2D/3D use the DXF bit 1 = closed
+  const closedPl = e.type === 'LWPOLYLINE' ? e.flag & 512 : e.flag & 1;
+  switch (e.type) {
+    case 'LINE': return cadLine([xy(e.startPoint), xy(e.endPoint)]);
+    case 'LWPOLYLINE': case 'POLYLINE2D': { const vs = e.vertices || [], closed = closedPl && vs.length >= 3, p = bulgePts(vs, closed); return closed ? cadPoly(p) : cadLine(p); }
+    case 'POLYLINE3D': { const p = (e.vertices || []).map(v => [v.x, v.y, v.z]); return closedPl && p.length >= 3 ? cadPoly(p) : cadLine(p); }
+    case 'ARC': { let s = e.endAngle - e.startAngle; if (s <= 0) s += 2 * Math.PI; return cadLine(arcPts(e.center.x, e.center.y, e.radius, e.startAngle, s)); }
+    case 'CIRCLE': return cadPoly(arcPts(e.center.x, e.center.y, e.radius, 0, 2 * Math.PI));
+    case 'ELLIPSE': {
+      let a0 = e.startAngle, a1 = e.endAngle; if (a1 <= a0) a1 += 2 * Math.PI;
+      const M = e.majorAxisEndPoint, n = Math.max(8, Math.ceil((a1 - a0) / STEP));
+      const p = Array.from({ length: n + 1 }, (_, i) => { const t = a0 + (a1 - a0) * i / n; return [e.center.x + M.x * Math.cos(t) - M.y * e.axisRatio * Math.sin(t), e.center.y + M.y * Math.cos(t) + M.x * e.axisRatio * Math.sin(t)]; });
+      return a1 - a0 >= 2 * Math.PI - 1e-9 ? cadPoly(p) : cadLine(p);
+    }
+    // shortcut: splines follow fit points, else the control polygon; evaluate the B-spline if curves look too coarse
+    case 'SPLINE': return cadLine((e.fitPoints?.length >= 2 ? e.fitPoints : e.controlPoints || []).map(xy));
+    case 'HATCH': { const r = hatchRings(e); return r.length ? { type: 'Polygon', coordinates: r } : null; } // first loop outer, rest holes
+    case 'SOLID': return cadPoly([e.corner1, e.corner2, e.corner4 || e.corner3, e.corner3].map(xy));
+    case '3DFACE': return cadPoly([e.corner1, e.corner2, e.corner3, e.corner4 || e.corner3].map(xy));
+    case 'POINT': return { type: 'Point', coordinates: xy(e.position) };
+    case 'INSERT': case 'MTEXT': return { type: 'Point', coordinates: xy(e.insertionPoint) };
+    case 'TEXT': return { type: 'Point', coordinates: xy(e.startPoint) };
+  }
+  return undefined; // not map geometry: counted as skipped
+}
+// shortcut: only the mirrored OCS (extrusion z < 0, common on arcs) is handled; apply the arbitrary-axis transform if 3D-rotated entities appear
+function mirrorOCS(g) { const m = c => typeof c[0] === 'number' ? [-c[0], ...c.slice(1)] : c.map(m); g.coordinates = m(g.coordinates); return g; }
+const mtextPlain = s => String(s ?? '').replace(/\\P/g, ' ').replace(/\\[A-Za-z][^;\\{}]*;/g, '').replace(/\\~/g, ' ').replace(/[{}]/g, '').trim();
+function xdataFields(xd, props) {
+  const flat = v => Array.isArray(v) ? v.map(x => flat(x?.value ?? x)).join('; ') : v && typeof v === 'object' ? [v.x, v.y, v.z].filter(n => n != null).join(',') : String(v ?? '');
+  for (const a of [].concat(xd || [])) if (a?.appName) props[`XD_${a.appName.replace(/\W+/g, '_')}`] = flat(a.value).slice(0, 254);
+}
+const CAD_JUNK = /^(defpoints|deleted[ _-]?elements?)$/i;
+function dbToFC(db) {
+  const layers = new Map((db.tables?.LAYER?.entries || []).map(l => [l.name, l]));
+  const ms = (db.tables?.BLOCK_RECORD?.entries || []).find(b => /^\*model_space$/i.test(b.name))?.handle;
+  const features = [], skipped = {};
+  for (const e of db.entities || []) {
+    if (e.type === 'ATTRIB' || (ms ? e.ownerBlockRecordSoftId !== ms : e.isInPaperSpace)) continue; // ATTRIBs are read through their INSERT
+    const L = layers.get(e.layer) || {};
+    // CAD housekeeping (Defpoints, Deleted Elements) and layers turned off or frozen in the drawing are not map content
+    const why = CAD_JUNK.test(e.layer || '') ? 'on Defpoints / Deleted layers' : L.off || L.frozen ? 'on layers turned off in CAD' : null;
+    if (why) { skipped[why] = (skipped[why] || 0) + 1; continue; }
+    let g; try { g = cadGeom(e); } catch (err) { g = null; }
+    if (!g) { skipped[e.type] = (skipped[e.type] || 0) + 1; continue; }
+    if (e.extrusionDirection?.z < 0) mirrorOCS(g);
+    const p = { Layer: e.layer, EntityType: e.type, Handle: e.handle,
+      Color: e.color != null ? '#' + e.color.toString(16).padStart(6, '0') : e.colorIndex === 256 ? aciHex(Math.abs(L.colorIndex ?? 7)) : e.colorIndex > 0 && e.colorIndex < 256 ? aciHex(e.colorIndex) : null,
+      Linetype: e.lineType || L.lineType || null };
+    const z = e.elevation ?? e.startPoint?.z ?? e.center?.z ?? e.insertionPoint?.z ?? e.position?.z;
+    if (z) p.Elevation = z;
+    const deg = r => r ? Math.round(r * 180 / Math.PI * 100) / 100 : 0;
+    if (e.type === 'TEXT' || e.type === 'MTEXT') Object.assign(p, { Text: e.type === 'TEXT' ? e.text : mtextPlain(e.text), Height: e.textHeight, Rotation: deg(e.rotation) });
+    if (e.type === 'INSERT') {
+      Object.assign(p, { BlockName: e.name, Rotation: deg(e.rotation) });
+      for (const a of e.attribs || []) { const k = a.tag || a.attrTag; if (k) p[k in p ? `ATT_${k}` : k] = a.text?.text ?? null; }
+    }
+    xdataFields(e.xdata, p);
+    features.push({ type: 'Feature', properties: p, geometry: g });
+  }
+  const mapOD = (db.objects?.DICTIONARY || []).some(d => Object.keys(d.entries || {}).some(k => /^ACMAP|^AcMap/i.test(k)));
+  return { fc: { type: 'FeatureCollection', features }, skipped, mapOD };
+}
+/* Stray objects (left at the drawing origin, or far-off construction points) would stretch the extent across states:
+   drop features whose first vertex is over 20× the median distance from the drawing's median point */
+function dropStrays(fc) {
+  const first = f => { let c = f.geometry.coordinates; while (Array.isArray(c[0])) c = c[0]; return c; };
+  const pts = fc.features.map(first), med = a => { const b = [...a].sort((x, y) => x - y); return b[Math.floor(b.length / 2)] ?? 0; };
+  if (pts.length < 10) return 0;
+  const cx = med(pts.map(c => c[0])), cy = med(pts.map(c => c[1])), d = pts.map(c => Math.hypot(c[0] - cx, c[1] - cy));
+  const cut = Math.max(20 * med(d), 1000), before = fc.features.length;
+  fc.features = fc.features.filter((_, i) => d[i] <= cut);
+  return before - fc.features.length;
+}
+const cadBucket = f => /Polygon/.test(f.geometry.type) ? 'Polygons' : /Line/.test(f.geometry.type) ? 'Polylines' : /TEXT/.test(f.properties.EntityType) ? 'Text' : 'Points';
+// </cad-logic>
+
 function eachCoord(fc, fn, limit = Infinity) {
   let n = 0;
   const walk = c => { if (n >= limit) return true; if (typeof c[0] === 'number') { n++; return fn(c); } for (const x of c) if (walk(x)) return true; };
@@ -1361,7 +1646,7 @@ async function ensureWgs(res) {
   if (!looksProjected(res.fc)) { res.crs ||= 'EPSG:4326'; return res; }
   const crsName = res.fc.crs?.properties?.name || '';
   let from = /3435/.test(crsName) ? 'EPSG:3435' : /26971/.test(crsName) ? 'EPSG:26971' : /3857|900913/.test(crsName) ? 'EPSG:3857' : null;
-  if (!from) from = await askCRS(res.name, sampleCoord(res.fc), res.crs === 'from .prj');
+  if (!from) from = batch?.from || await askCRS(res.name, sampleCoord(res.fc), res.crs === 'from .prj');
   if (!from) throw new Error('Import cancelled — the coordinate system is unknown.');
   res.fc = await runIO('reproject', { fc: res.fc, from });
   res.crs = from.startsWith('EPSG') ? from : 'custom';
@@ -1389,7 +1674,7 @@ function cleanFC(fc) {
   return { fc: { type: 'FeatureCollection', features: out }, dropped };
 }
 function newLayer(p = {}) {
-  const l = { id: uid('lyr'), name: 'Layer', visible: true, source: null, excludeFromSave: false, nextId: 1, _v: 1, fields: [], data: { type: 'FeatureCollection', features: [] },
+  const l = { id: uid('lyr'), name: 'Layer', group: null, visible: true, source: null, excludeFromSave: false, nextId: 1, _v: 1, fields: [], data: { type: 'FeatureCollection', features: [] },
               ...p, style: { fill: null, stroke: null, fillOpacity: 0.3, strokeWidth: 1.6, opacity: 1, labelField: null, styleBy: null, extrude: false, heightField: null, height: null, ...(p.style || {}) } };
   if (!l.style.fill) l.style.fill = nextColor();
   return l;
@@ -1406,17 +1691,17 @@ async function finalizeImport(res, opts = {}) {
   const { fc, dropped } = cleanFC(res.fc);
   if (dropped) toast('warn', `${res.name}: ${dropped} feature(s) without geometry skipped`);
   if (!fc.features.length) { toast('warn', `${res.name}: nothing to show`, 'The file loaded but contained no mappable features.'); return false; }
-  const layer = newLayer({ name: res.name, data: fc, fields: inferFields(fc.features),
+  const layer = newLayer({ name: res.name, data: fc, fields: inferFields(fc.features), style: res.style, group: res.group, legendOpen: res.legendOpen,
     source: { fileName: res.fileName, format: res.format, crs: res.crs || 'EPSG:4326', importedAt: new Date().toISOString() } });
   ensureIds(layer);
   addLayer(layer);
   const n = fc.features.length;
-  toast('success', `Added “${layer.name}”`, `${nf(n)} features · ${layer.fields.length} fields${layer.source.crs === 'from .prj' ? ' · reprojected using its .prj' : layer.source.crs !== 'EPSG:4326' ? ' · reprojected from ' + layer.source.crs : ''}`);
-  if (n > 50000) toast('warn', `“${layer.name}” is large`, 'Lock a GIS area and turn on performance mode to keep the map smooth.');
+  if (batch) { batch.layers++; if (n > 50000) batch.large++; } else toast('success', `Added “${layer.name}”`, `${nf(n)} features · ${layer.fields.length} fields${layer.source.crs === 'from .prj' ? ' · reprojected using its .prj' : layer.source.crs !== 'EPSG:4326' ? ' · reprojected from ' + layer.source.crs : ''}`);
+  if (n > 50000 && !batch) toast('warn', `“${layer.name}” is large`, 'Lock a GIS area and turn on performance mode to keep the map smooth.');
   try {
     const b = turf.bbox(layer.data), a = S.ui.area?.bbox;
-    if (a && (b[2] < a[0] || b[0] > a[2] || b[3] < a[1] || b[1] > a[3])) toast('warn', `“${layer.name}” is outside your GIS area`, 'Unlock the area or fit it to this layer to see it.', { action: { label: 'Fit area to layer', fn: () => areaFromLayer(layer) } });
-    else if (!opts.noZoom) fitBbox(b);
+    if (a && (b[2] < a[0] || b[0] > a[2] || b[3] < a[1] || b[1] > a[3])) batch ? batch.outside++ : toast('warn', `“${layer.name}” is outside your GIS area`, 'Unlock the area or fit it to this layer to see it.', { action: { label: 'Fit area to layer', fn: () => areaFromLayer(layer) } });
+    else if (!opts.noZoom && !batch) fitBbox(b); // a batch zooms once at the end
   } catch (e) {}
   return true;
 }
@@ -1443,85 +1728,254 @@ async function newEmptyLayer() {
   const l = newLayer({ name: n.trim(), fields: [{ name: 'name', type: 'text' }] }); addLayer(l);
   toast('success', `New shapes go to “${l.name}”`, 'Pick a drawing tool on the left of the map.');
 }
-async function loadSamples() {
-  try {
-    const files = await Promise.all(CFG.samples.map(async p => {
-      const r = await fetch(p); if (!r.ok) throw new Error(r.status);
-      return new File([await r.blob()], p.split('/').pop());
-    }));
-    const n = await handleFiles(files, { noZoom: true });
-    if (n) { homeView(); toast('info', 'Sample data loaded', 'Synthetic test data. Try editing a shape (double-click it) or a cell in the attribute table.'); }
-  } catch (e) {
-    toast('info', 'Pick the sample files', 'Browsers block reading the samples folder when the page is opened from disk. Select the files in the “samples” folder next to index.html.');
-    pickFiles();
-  }
-}
-
 /* ======================= LAYERS — panel UI ======================= */
 function renderLayerPanel() {
   const root = $('#layer-list');
-  if (!S.layers.length) {
+  if (!S.layers.length && bundleLoading) { root.innerHTML = `<div class="left-empty">${icon('layers', 28).replace('class="ic"', 'class="ic" style="margin:0 auto 10px;color:var(--ink-tertiary)"')}Loading the project…</div>`; return; }
+  if (!S.layers.length && !S.emptyGroups.length) {
     root.innerHTML = `<div class="left-empty">${icon('layers', 28).replace('class="ic"', 'class="ic" style="margin:0 auto 10px;color:var(--ink-tertiary)"')}No layers yet.<br>Open files, drop them on the map, or start drawing.<div style="margin-top:14px;display:flex;gap:6px;justify-content:center"><button class="btn sm" data-act="open">${icon('upload', 14)} Open files</button><button class="btn sm" data-act="folder">${icon('folder', 14)} Folder</button><button class="btn sm ghost" data-act="new">${icon('plus', 14)} New layer</button></div></div>`;
     root.querySelector('[data-act=open]').onclick = pickFiles;
     root.querySelector('[data-act=folder]').onclick = openFolder;
     root.querySelector('[data-act=new]').onclick = newEmptyLayer;
     return;
   }
-  root.replaceChildren(...S.layers.map(layerRow), el(`<div class="left-foot">The highlighted layer receives new shapes. Double-click a feature on the map to edit its shape.</div>`));
+  const rows = layerTree(S.layers, '', 0);
+  if (S.layers.some(dimmed)) {
+    const f = S.ui.focus, bar = el(`<div class="focus-bar">${icon('target', 13)}<span>Focus: <b>${esc(f.startsWith('g:') ? f.slice(2).replace(/\//g, ' › ') : layerById(f)?.name || '')}</b></span><button class="btn sm ghost">Show all</button></div>`);
+    bar.querySelector('button').onclick = () => setFocus(null);
+    rows.unshift(bar);
+  }
+  root.replaceChildren(...rows, el(`<div class="left-foot">The highlighted layer receives new shapes. Double-click a feature on the map to edit its shape. Drag a group onto another group to nest it.</div>`));
+}
+/* Layer groups: layer.group is a path like "ALP/Fencing" (segments joined by "/"); members of a group stay next to each other in S.layers */
+const groupHidden = l => !!l.group && S.hiddenGroups.some(g => inGroup(l, g));
+const shown = l => (HK.visible?.(l) ?? l.visible) && !groupHidden(l);
+const inGroup = (l, path) => !!l.group && (l.group === path || l.group.startsWith(path + '/'));
+const lastSeg = path => path.slice(path.lastIndexOf('/') + 1);
+const parentOf = path => path.includes('/') ? path.slice(0, path.lastIndexOf('/')) : null;
+const withAncestors = p => p.split('/').map((_, i, a) => a.slice(0, i + 1).join('/'));
+const groupNames = () => [...new Set([...S.layers.flatMap(l => l.group ? withAncestors(l.group) : []), ...S.emptyGroups.flatMap(withAncestors)])];
+const emptyPaths = () => [...new Set(S.emptyGroups.flatMap(withAncestors))].filter(p => !S.layers.some(l => inGroup(l, p))); // folders with no layers yet
+async function newEmptyGroup(parent = null) {
+  const n = cleanGroupName(await promptDialog(parent ? `New group inside “${lastSeg(parent)}”` : 'New group', 'Group name', `Group ${groupNames().length + 1}`));
+  if (!n) return;
+  const path = parent ? `${parent}/${n}` : n;
+  if (groupNames().includes(path)) return toast('warn', `A group named “${n}” already exists here`);
+  S.emptyGroups.push(path); showPanel('left', true); changed('layers');
+  toast('info', `Created group “${n}”`, 'Drag layers onto it, or use “Move to” in a layer’s menu.');
+}
+const cleanGroupName = s => s?.trim().replace(/\s*\/\s*/g, ' - ') || null; // "/" separates nesting levels
+function layerTree(layers, prefix, depth) { // consecutive layers that share the next path segment render under one header
+  const out = emptyPaths().filter(p => (parentOf(p) || '') === prefix).map(p => groupBlock(p, [], depth));
+  for (let i = 0; i < layers.length;) {
+    const l = layers[i], rest = l.group && l.group !== prefix ? l.group.slice(prefix ? prefix.length + 1 : 0) : null;
+    if (!rest) { out.push(layerRow(l, depth)); i++; continue; }
+    const path = (prefix ? prefix + '/' : '') + rest.split('/')[0], members = [];
+    while (i < layers.length && inGroup(layers[i], path)) members.push(layers[i++]);
+    out.push(groupBlock(path, members, depth));
+  }
+  return out;
+}
+function insertAt(path) { // index just after the group's last layer, else after its nearest existing ancestor, else the top
+  for (let p = path; p; p = parentOf(p)) { const i = S.layers.findLastIndex(x => inGroup(x, p)); if (i >= 0) return i + 1; }
+  return 0;
+}
+function setGroup(l, g) {
+  S.layers.splice(S.layers.indexOf(l), 1);
+  S.layers.splice(g ? insertAt(g) : 0, 0, l);
+  l.group = g || null;
+  syncAllLayers(); changed('layers');
+}
+async function newGroup(l, parent = null) {
+  const n = cleanGroupName(await promptDialog(parent ? `New group inside “${lastSeg(parent)}”` : 'New group', 'Group name', `Group ${groupNames().length + 1}`));
+  if (n) setGroup(l, parent ? `${parent}/${n}` : n);
+}
+function renameGroupPath(from, to) { // re-paths every layer, collapsed flag, focus and appearance under "from"; to = null ungroups one level
+  const re = p => p === from ? to : p.startsWith(from + '/') ? (to ? to + p.slice(from.length) : p.slice(from.length + 1)) : p;
+  for (const l of S.layers) if (inGroup(l, from)) l.group = re(l.group) || null;
+  S.ui.closedGroups = (S.ui.closedGroups || []).map(re).filter(Boolean);
+  if (S.ui.focus?.startsWith('g:')) { const f = re(S.ui.focus.slice(2)); S.ui.focus = f ? 'g:' + f : null; }
+  const gs = {}; for (const [k, v] of Object.entries(S.groupStyle)) { const k2 = re(k); if (k2) gs[k2] = v; } S.groupStyle = gs;
+  S.emptyGroups = [...new Set(S.emptyGroups.map(re).filter(Boolean))];
+  S.hiddenGroups = [...new Set(S.hiddenGroups.map(re).filter(Boolean))];
+}
+function renameGroupTo(g, v) {
+  const to = (parentOf(g) ? parentOf(g) + '/' : '') + v;
+  if (groupNames().includes(to)) return toast('warn', `A group named “${v}” already exists here`);
+  renameGroupPath(g, to); changed('layers');
+}
+function moveGroup(from, target) { // nest group "from" inside "target" (null = top level), after target's layers
+  if (target === from || target?.startsWith(from + '/')) return;
+  const to = (target ? target + '/' : '') + lastSeg(from);
+  if (to !== from && groupNames().includes(to)) return toast('warn', `“${target ? lastSeg(target) : 'Top level'}” already has a group named “${lastSeg(from)}”`);
+  const block = S.layers.filter(l => inGroup(l, from));
+  S.layers = S.layers.filter(l => !block.includes(l));
+  S.layers.splice(target ? insertAt(target) : 0, 0, ...block);
+  renameGroupPath(from, to);
+  syncAllLayers(); changed('layers');
+}
+const GROUP_ICONS = ['folder', 'layers', 'map', 'area', 'polygon', 'line', 'point', 'ruler', 'lock', 'zap', 'globe', 'bookmark'];
+async function groupAppearance(path) {
+  const cur = S.groupStyle[path] || {};
+  const body = el(`<div>
+    <div class="field"><label>Icon</label><div class="icon-pick">${GROUP_ICONS.map(n => `<label title="${n}"><input type="radio" name="gicon" value="${n}" ${(cur.icon || 'folder') === n ? 'checked' : ''}>${icon(n, 16)}</label>`).join('')}</div></div>
+    <div class="field"><label>Color</label><div class="row"><input type="color" class="input" id="gcolor" value="${toHex(cur.color || cssVar('--primary'))}"><label class="check"><input type="checkbox" id="gcolor-on" ${cur.color ? 'checked' : ''}> Use this color</label></div></div>
+  </div>`);
+  body.querySelector('#gcolor').oninput = () => { body.querySelector('#gcolor-on').checked = true; };
+  if (!await modal({ title: `Group appearance — ${lastSeg(path)}`, body, ok: 'Apply' })) return;
+  S.groupStyle[path] = { icon: body.querySelector('input[name=gicon]:checked').value, color: body.querySelector('#gcolor-on').checked ? body.querySelector('#gcolor').value : null };
+  changed('layers');
+}
+let dragGroup = null;
+function groupBlock(g, members, depth) {
+  const open = !S.ui.closedGroups?.includes(g), allOn = !S.hiddenGroups.includes(g), gs = S.groupStyle[g] || {};
+  const n = members.reduce((s, l) => s + l.data.features.length, 0), name = lastSeg(g);
+  const qs = members.map(m => HK.layerState?.(m)).filter(Boolean), qOn = qs.some(x => x.on);
+  const box = el(`<div class="lgroup ${allOn ? '' : 'ghidden'}" style="--d:${depth}"><div class="lrow ghead ${allOn ? '' : 'off'} ${members.length && members.every(dimmed) ? 'dim' : ''} ${qs.length ? (qOn ? 'q-on' : 'q-off') : ''}" draggable="true" title="${esc(g.replace(/\//g, ' › '))}">
+    <button class="icon-btn sm tw" aria-expanded="${open}" title="${open ? 'Collapse' : 'Expand'} group" aria-label="${open ? 'Collapse' : 'Expand'} ${esc(name)}">${icon('chevron', 14)}</button>
+    <button class="icon-btn sm vis" title="${allOn ? 'Hide' : 'Show'} group" aria-label="${allOn ? 'Hide' : 'Show'} ${esc(name)}">${icon(allOn ? 'eye' : 'eyeOff', 15)}</button>
+    <span class="gi" ${gs.color ? `style="color:${gs.color}"` : ''}>${icon(gs.icon || 'folder', 14)}</span>
+    <span class="nm">${esc(name)}</span>
+    <span class="cnt">${nf(n)}</span>
+    <button class="icon-btn sm act menu-btn" title="Group options" aria-label="Options for group ${esc(name)}">${icon('more', 15)}</button>
+  </div></div>`);
+  const h = box.firstElementChild;
+  const toggle = () => { const c = S.ui.closedGroups ||= []; open ? c.push(g) : c.splice(c.indexOf(g), 1); renderLayerPanel(); };
+  h.querySelector('.tw').onclick = toggle;
+  h.onclick = e => { if (!e.target.closest('button')) toggle(); };
+  h.querySelector('.vis').onclick = () => { S.hiddenGroups = allOn ? [...S.hiddenGroups, g] : S.hiddenGroups.filter(x => x !== g); syncAllLayers(); changed('layers'); }; // layers keep their own eye
+  const menu = anchor => openMenu(anchor, [
+    { label: 'Focus on this group', icon: 'target', checked: S.ui.focus === 'g:' + g, fn: () => setFocus('g:' + g) },
+    { label: 'Zoom to group', icon: 'target', fn: () => { try { fitBbox(turf.bbox({ type: 'FeatureCollection', features: members.flatMap(l => l.data.features) })); } catch (e) {} } },
+    { label: 'New group inside…', icon: 'folderPlus', fn: () => newEmptyGroup(g) },
+    { label: 'Appearance…', icon: 'style', fn: () => groupAppearance(g) },
+    { label: 'Rename group…', icon: 'edit', fn: async () => { const v = cleanGroupName(await promptDialog('Rename group', 'Group name', name)); if (v && v !== name) renameGroupTo(g, v); } },
+    parentOf(g) && { label: 'Move out to top level', icon: 'layers', fn: () => moveGroup(g, null) },
+    { label: 'Ungroup', icon: 'layers', fn: () => { renameGroupPath(g, parentOf(g)); changed('layers'); } },
+    { sep: true },
+    { label: members.length ? 'Remove group and its layers' : 'Remove group', icon: 'trash', danger: true, fn: async () => {
+      if (members.length && !await confirmDialog(`Remove “${name}”?`, `This removes its ${members.length} layer(s) from the workspace. Your original files are not changed.`, 'Remove')) return;
+      S.emptyGroups = S.emptyGroups.filter(p => p !== g && !p.startsWith(g + '/')); S.hiddenGroups = S.hiddenGroups.filter(p => p !== g && !p.startsWith(g + '/')); members.forEach(l => removeLayer(l.id)); changed('layers');
+    } },
+  ]);
+  h.querySelector('.menu-btn').onclick = e => menu(e.currentTarget);
+  h.addEventListener('contextmenu', e => { e.preventDefault(); menu({ getBoundingClientRect: () => ({ left: e.clientX, right: e.clientX, top: e.clientY, bottom: e.clientY }) }); });
+  h.ondragstart = e => { dragGroup = g; dragId = null; h.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', g); };
+  h.ondragend = () => { dragGroup = null; h.classList.remove('dragging'); };
+  h.ondragover = e => { if ((dragGroup && dragGroup !== g && !g.startsWith(dragGroup + '/')) || layerById(dragId)) { e.preventDefault(); h.classList.add('drag-into'); } };
+  h.ondragleave = () => h.classList.remove('drag-into');
+  h.ondrop = e => { // a group dropped on a group nests inside it; a layer dropped on a group joins it
+    e.preventDefault(); h.classList.remove('drag-into');
+    if (dragGroup) moveGroup(dragGroup, g); else { const d = layerById(dragId); if (d) setGroup(d, g); }
+  };
+  if (open) { const kids = layerTree(members, g, depth + 1); box.append(...(kids.length ? kids : [el(`<div class="gempty" style="--d:${depth + 1}">Empty — drag layers or groups here</div>`)])); }
+  return box;
 }
 let dragId = null;
-function layerRow(l) {
-  const n = l.data.features.length, active = S.ui.activeLayer === l.id;
-  const row = el(`<div><div class="lrow ${l.visible ? '' : 'off'} ${active ? 'active' : ''}" draggable="true" data-id="${l.id}" title="${esc(l.name)}${l.source ? ' — ' + esc(l.source.fileName) : ''}">
-    <span class="grip" aria-hidden="true">${icon('grip', 14)}</span>
+function layerRow(l, depth = 0) {
+  const n = l.data.features.length, active = S.ui.activeLayer === l.id, dim = dimmed(l);
+  const pal = dim ? null : styleByPalette(l), cats = !!pal?.length, open = cats && l.legendOpen !== false;
+  const q = HK.layerState?.(l); // extension view: this layer contributes (on) or not (off)
+  const row = el(`<div style="--d:${depth}"><div class="lrow ${l.visible ? '' : 'off'} ${active ? 'active' : ''} ${dim ? 'dim' : ''} ${q ? (q.on ? 'q-on' : 'q-off') : ''}" draggable="true" data-id="${l.id}" title="${esc(l.name)}${l.source ? ' — ' + esc(l.source.fileName) : ''}">
+    ${cats ? `<button class="icon-btn sm tw" aria-expanded="${open}" title="${open ? 'Hide' : 'Show'} categories" aria-label="${open ? 'Hide' : 'Show'} categories of ${esc(l.name)}">${icon('chevron', 14)}</button>` : `<span class="grip" aria-hidden="true">${icon('grip', 14)}</span>`}
     <button class="icon-btn sm vis" title="${l.visible ? 'Hide' : 'Show'} layer" aria-label="${l.visible ? 'Hide' : 'Show'} ${esc(l.name)}">${icon(l.visible ? 'eye' : 'eyeOff', 15)}</button>
-    <span class="sw" style="background:${layerColor(l)}"></span>
-    <span class="nm">${esc(l.name)}</span>
-    ${active ? '<span class="tgt" title="New shapes go here">Target</span>' : ''}
-    <span class="cnt">${nf(n)}</span>
+    <span class="sw" style="background:${dim ? 'var(--ink-subtle)' : layerColor(l)}"></span>
+    <span class="nm">${esc(l.group && l.name.startsWith(lastSeg(l.group) + ' — ') ? l.name.slice(lastSeg(l.group).length + 3) : l.name)}</span>
+    ${active && canEdit(l) ? '<span class="tgt" title="New shapes go here">Target</span>' : ''}
+    <span class="cnt" ${q?.on ? `title="${nf(q.n)} of ${nf(n)} in the current view"` : ''}>${q?.on ? nf(q.n) : nf(n)}</span>
     <button class="icon-btn sm act tbl" title="Attribute table" aria-label="Attribute table for ${esc(l.name)}">${icon('table', 14)}</button>
     <button class="icon-btn sm act menu-btn" title="Layer options" aria-label="Options for ${esc(l.name)}">${icon('more', 15)}</button>
   </div></div>`);
   const r = row.firstElementChild;
   r.onclick = e => { if (e.target.closest('button')) return; if (S.ui.activeLayer !== l.id) { S.ui.activeLayer = l.id; renderLayerPanel(); renderToolbar(); } };
   r.querySelector('.vis').onclick = () => { l.visible = !l.visible; syncAllLayers(); changed('layers'); };
+  if (cats) r.querySelector('.tw').onclick = () => { l.legendOpen = !open; changed('layers'); };
   r.querySelector('.tbl').onclick = () => openTable(l);
   r.querySelector('.menu-btn').onclick = e => layerMenu(l, e.currentTarget);
   r.querySelector('.nm').ondblclick = () => renameLayer(l);
   r.addEventListener('contextmenu', e => { e.preventDefault(); layerMenu(l, { getBoundingClientRect: () => ({ left: e.clientX, right: e.clientX, top: e.clientY, bottom: e.clientY }) }); });
   r.ondragstart = e => { dragId = l.id; r.classList.add('dragging'); e.dataTransfer.effectAllowed = 'move'; e.dataTransfer.setData('text/plain', l.id); };
   r.ondragend = () => { dragId = null; r.classList.remove('dragging'); };
-  r.ondragover = e => { const d = layerById(dragId); if (d && d !== l) { e.preventDefault(); r.classList.add('drag-over'); } };
+  r.ondragover = e => { const d = layerById(dragId); if ((d && d !== l) || (dragGroup && !inGroup(l, dragGroup))) { e.preventDefault(); r.classList.add('drag-over'); } };
   r.ondragleave = () => r.classList.remove('drag-over');
   r.ondrop = e => {
     e.preventDefault(); r.classList.remove('drag-over');
+    if (dragGroup) return moveGroup(dragGroup, l.group || null); // a group dropped on a layer moves into that layer's group
     const d = layerById(dragId); if (!d || d === l) return;
     S.layers.splice(S.layers.indexOf(d), 1); S.layers.splice(S.layers.indexOf(l), 0, d);
+    d.group = l.group || null; // dropping onto a layer joins (or leaves for) its group
     syncAllLayers(); changed('layers');
   };
-  const pal = styleByPalette(l);
-  if (pal && pal.length) {
+  if (open) { // out-of-focus layers get no palette, so their lists fold without touching legendOpen
     const off = hiddenCats(l);
-    const lg = el(`<div class="legend">${pal.map(([v, c]) => `<button class="${off.includes(v) ? 'off' : ''}" data-v="${esc(v)}" aria-pressed="${!off.includes(v)}" title="${off.includes(v) ? 'Show' : 'Hide'} “${esc(v)}”"><i style="background:${c}"></i>${esc(v)}</button>`).join('')}</div>`);
+    const lg = el(`<div class="legend">${pal.map(([v, c]) => `<button class="${off.includes(v) ? 'off' : ''}" data-v="${esc(v)}" aria-pressed="${!off.includes(v)}" title="${off.includes(v) ? 'Show' : 'Hide'} “${esc(v)}” · right-click for style"><i style="background:${l.style.cats?.[v]?.dash ? `repeating-linear-gradient(90deg,${c} 0 3px,transparent 3px 5px)` : c}"></i>${esc(v)}</button>`).join('')}</div>`);
     lg.onclick = e => {
       const b = e.target.closest('button'); if (!b) return;
       const v = b.dataset.v, h = hiddenCats(l);
       l.style = { ...l.style, hidden: h.includes(v) ? h.filter(x => x !== v) : [...h, v] };
       syncLayer(l); changed('layers');
     };
+    lg.oncontextmenu = e => { const b = e.target.closest('button'); if (!b) return; e.preventDefault(); catMenu(l, b.dataset.v, b); };
     row.append(lg);
   }
   return row;
 }
+/* Right-click a category in the panel legend: per-value color, line pattern, width and visibility (style.cats[value]) */
+function setCat(l, v, patch) {
+  const c = { ...l.style.cats?.[v], ...patch };
+  for (const k of Object.keys(c)) if (c[k] == null || c[k] === false) delete c[k];
+  l.style = { ...l.style, cats: { ...l.style.cats, [v]: c } };
+  syncLayer(l); changed('layers');
+}
+function catMenu(l, v, anchor) {
+  const pal = styleByPalette(l) || [], c = l.style.cats?.[v] || {}, w = c.width ?? l.style.strokeWidth, h = hiddenCats(l);
+  const used = new Set(pal.map(([, x]) => toHex(x).toLowerCase()));
+  const fresh = () => CFG.palette.find(x => !used.has(x.toLowerCase())) || `hsl(${Math.round(Math.random() * 360)} 75% 55%)`;
+  const pick = () => { // native color picker, kept in the DOM only while open
+    const inp = Object.assign(document.createElement('input'), { type: 'color', value: toHex(pal.find(([x]) => x === v)?.[1] || layerColor(l)) });
+    inp.style.cssText = 'position:fixed;left:-99px;opacity:0';
+    inp.oninput = () => setCat(l, v, { color: inp.value });
+    inp.onchange = inp.onblur = () => inp.remove();
+    document.body.append(inp); inp.click();
+  };
+  openMenu(anchor, [
+    { header: v },
+    { label: 'New color', icon: 'style', fn: () => setCat(l, v, { color: toHex(fresh()) }) },
+    { label: 'Choose color…', icon: 'style', fn: pick },
+    { sep: true },
+    { label: 'Solid line', icon: 'line', checked: !c.dash, fn: () => setCat(l, v, { dash: false }) },
+    { label: 'Dashed line', icon: 'line', checked: !!c.dash, fn: () => setCat(l, v, { dash: true }) },
+    { label: `Thicker (${w} → ${w + 1})`, icon: 'plus', fn: () => setCat(l, v, { width: w + 1 }) },
+    { label: `Thinner (${w} → ${Math.max(0.5, w - 1)})`, icon: 'split', disabled: w <= 0.5, fn: () => setCat(l, v, { width: Math.max(0.5, w - 1) }) },
+    { sep: true },
+    { label: h.includes(v) ? 'Show' : 'Hide', icon: h.includes(v) ? 'eye' : 'eyeOff', fn: () => { l.style = { ...l.style, hidden: h.includes(v) ? h.filter(x => x !== v) : [...h, v] }; syncLayer(l); changed('layers'); } },
+    { label: 'Show only this', icon: 'target', fn: () => { l.style = { ...l.style, hidden: pal.map(([x]) => x).filter(x => x !== v) }; syncLayer(l); changed('layers'); } },
+    (h.length > 0) && { label: 'Show all', icon: 'eye', fn: () => { l.style = { ...l.style, hidden: [] }; syncLayer(l); changed('layers'); } },
+    l.style.cats?.[v] && { label: 'Reset style', icon: 'undo', fn: () => { const { [v]: _, ...rest } = l.style.cats; l.style = { ...l.style, cats: rest }; syncLayer(l); changed('layers'); } },
+  ]);
+}
 function layerMenu(l, anchor) {
   const hasMulti = l.data.features.some(f => /^Multi/.test(f.geometry?.type));
+  const groupTree = parent => groupNames().filter(g => parentOf(g) === parent).map(g => {
+    const children = groupNames().some(child => parentOf(child) === g);
+    return {
+      label: lastSeg(g), icon: 'folder', fn: () => setGroup(l, g),
+      ...(children ? { submenu: groupTree(g) } : {}),
+    };
+  });
   openMenu(anchor, [
+    { label: 'Focus on this layer', icon: 'target', checked: S.ui.focus === l.id, fn: () => setFocus(l.id) },
     { label: 'Zoom to layer', icon: 'target', fn: () => zoomToLayer(l) },
     { label: 'Rename…', icon: 'edit', fn: () => renameLayer(l) },
     { label: 'Style & labels…', icon: 'style', fn: () => styleDialog(l) },
     { label: 'Attribute table', icon: 'table', fn: () => openTable(l) },
     { label: 'Fields…', icon: 'fields', fn: () => fieldsDialog(l) },
     { label: 'Draw new shapes here', icon: 'edit', checked: S.ui.activeLayer === l.id, fn: () => { S.ui.activeLayer = l.id; emit('layers'); toast('info', `New shapes go to “${l.name}”`); } },
+    { sep: true }, { header: 'Group' },
+    groupTree(null).length && { label: 'Move to group…', icon: 'folder', submenu: groupTree(null) },
+    { label: 'New group…', icon: 'plus', fn: () => newGroup(l) },
+    l.group && { label: `New group inside “${lastSeg(l.group)}”…`, icon: 'plus', fn: () => newGroup(l, l.group) },
+    l.group && { label: 'Remove from group', icon: 'layers', fn: () => setGroup(l, null) },
     { sep: true },
     { label: 'Buffer layer…', icon: 'buffer', fn: () => bufferDialog(l, l.data.features, l.name) },
     hasMulti && { label: 'Explode multi-part features', icon: 'split', fn: () => explodeFeatures(l) },
@@ -1553,20 +2007,41 @@ function styleDialog(l) {
       <div class="field"><label>Default 3D height (ft)</label><input type="number" class="input" data-k="height" min="0" step="5" placeholder="20" value="${st.height ?? ''}"></div>
     </div>
     <label class="check"><input type="checkbox" data-k="extrude" ${st.extrude ? 'checked' : ''}> Extrude polygons in 3D</label>
+    <div class="sect">Categories <button class="btn sm ghost" id="cat-reset">Reset</button></div>
+    <div id="cat-box" class="cat-box"></div>
     <div class="sect">Style presets</div>
     <div class="row"><select class="input" id="sp-pick"><option value="">Apply a saved preset…</option>${S.presets.styles.map((p, i) => `<option value="${i}">${esc(p.name)}</option>`).join('')}</select><button class="btn sm" id="sp-save">Save as preset…</button></div>
   </div>`);
   const live = () => { l.style = { ...st }; bumpData(l); syncLayer(l); };
   body.querySelectorAll('[data-k]').forEach(inp => inp.addEventListener('input', () => {
     const k = inp.dataset.k;
-    if (k === 'styleBy') st.hidden = [];
+    if (k === 'styleBy') { st.hidden = []; st.cats = {}; }
     st[k] = inp.type === 'checkbox' ? inp.checked : inp.type === 'range' ? +inp.value : inp.type === 'number' ? (inp.value === '' ? null : +inp.value) : (inp.value || null);
     const o = body.querySelector(`[data-o="${k}"]`); if (o) o.textContent = st[k];
     live();
+    if (k === 'styleBy') renderCats();
   }));
+  /* Per-category table: show/hide, color, line width, fill opacity */
+  const catBox = body.querySelector('#cat-box');
+  function renderCats() {
+    const pal = styleByPalette({ style: st, data: l.data }), off = st.hidden || [];
+    catBox.innerHTML = pal ? pal.map(([v, c]) => { const o = st.cats?.[v] || {};
+      return `<div class="cat-row"><label class="check"><input type="checkbox" data-c="show" data-v="${esc(v)}" ${off.includes(v) ? '' : 'checked'}> <span class="nm">${esc(v)}</span></label>
+        <input type="color" class="input" data-c="color" data-v="${esc(v)}" value="${toHex(c)}" title="Color">
+        <input type="number" class="input" data-c="width" data-v="${esc(v)}" min="0" max="10" step="0.5" placeholder="${st.strokeWidth}" value="${o.width ?? ''}" title="Line width">
+        <input type="number" class="input" data-c="fillOpacity" data-v="${esc(v)}" min="0" max="1" step="0.05" placeholder="${st.fillOpacity}" value="${o.fillOpacity ?? ''}" title="Fill opacity"></div>`; }).join('') : '<div class="hint">Pick “Color by attribute” to style each value.</div>';
+  }
+  catBox.addEventListener('input', e => {
+    const inp = e.target, v = inp.dataset.v, k = inp.dataset.c; if (v == null) return;
+    if (k === 'show') st.hidden = inp.checked ? (st.hidden || []).filter(x => x !== v) : [...(st.hidden || []), v];
+    else st.cats = { ...st.cats, [v]: { ...st.cats?.[v], [k]: k === 'color' ? inp.value : inp.value === '' ? null : +inp.value } };
+    live();
+  });
+  body.querySelector('#cat-reset').onclick = () => { st.hidden = []; st.cats = {}; live(); renderCats(); };
+  renderCats();
   body.querySelectorAll('[data-reset]').forEach(b => b.onclick = () => { st[b.dataset.reset] = null; live(); });
   body.querySelector('#sp-pick').onchange = e => { const p = S.presets.styles[+e.target.value]; if (p) { Object.assign(st, p.style); live(); syncDialog(); } };
-  body.querySelector('#sp-save').onclick = async () => { const n = await promptDialog('Save style preset', 'Preset name', `${l.name} style`); if (n) { const { labelField, styleBy, heightField, hidden, ...rest } = st; S.presets.styles.push({ name: n, style: rest }); changed('presets'); toast('success', `Saved style preset “${n}”`); } };
+  body.querySelector('#sp-save').onclick = async () => { const n = await promptDialog('Save style preset', 'Preset name', `${l.name} style`); if (n) { const { labelField, styleBy, heightField, hidden, cats, ...rest } = st; S.presets.styles.push({ name: n, style: rest }); changed('presets'); toast('success', `Saved style preset “${n}”`); } };
   const syncDialog = () => body.querySelectorAll('[data-k]').forEach(inp => { const v = st[inp.dataset.k]; if (inp.type === 'checkbox') inp.checked = !!v; else if (inp.type === 'color') { if (v) inp.value = toHex(v); } else inp.value = v ?? ''; });
   const before = clone(l.style);
   modal({ title: `Style — ${l.name}`, body, ok: 'Done', cancel: 'Revert' }).then(ok => {
@@ -1584,6 +2059,7 @@ function toHex(c) {
 const fieldOf = (l, name) => l.fields.find(f => f.name === name);
 function afterDataEdit(l, ...topics) { bumpData(l); syncLayer(l); changed('table', 'selection', ...topics); }
 function addField(l, name, type, def = null) {
+  if (!editGuard(l)) return false;
   const err = validFieldName(l.fields, name); if (err) { toast('warn', err); return false; }
   recordUndo(l); name = name.trim();
   l.fields.push({ name, type });
@@ -1593,6 +2069,7 @@ function addField(l, name, type, def = null) {
   return true;
 }
 function renameField(l, from, to) {
+  if (!editGuard(l)) return false;
   const err = validFieldName(l.fields, to, from); if (err) { toast('warn', err); return false; }
   to = to.trim(); if (to === from) return true;
   recordUndo(l);
@@ -1603,6 +2080,7 @@ function renameField(l, from, to) {
   return true;
 }
 function retypeField(l, name, type) {
+  if (!editGuard(l)) return;
   const fd = fieldOf(l, name); if (!fd || fd.type === type) return;
   recordUndo(l);
   let lost = 0;
@@ -1613,6 +2091,7 @@ function retypeField(l, name, type) {
   if (lost) toast('warn', `${lost} value(s) couldn’t become ${FIELD_TYPES[type]}`, 'They are now empty. Undo to restore them.', { action: { label: 'Undo', fn: undo } });
 }
 async function deleteField(l, name) {
+  if (!editGuard(l)) return;
   if (!await confirmDialog(`Delete field “${name}”?`, `Its values in all ${nf(l.data.features.length)} features are removed. You can undo this.`, 'Delete')) return;
   recordUndo(l);
   l.fields = l.fields.filter(f => f.name !== name);
@@ -1623,6 +2102,7 @@ async function deleteField(l, name) {
 }
 /* Set one field on many features. fids = null → every feature */
 function setValues(l, name, value, fids = null) {
+  if (!editGuard(l)) return;
   const fd = fieldOf(l, name); if (!fd) return;
   const v = coerce(value, fd.type), s = fids && new Set(fids);
   if (value != null && value !== '' && v == null) return toast('warn', `“${value}” is not a valid ${FIELD_TYPES[fd.type].toLowerCase()}`);
@@ -1725,7 +2205,8 @@ function destroyDraw() { if (S.editing) cancelEdit(); try { draw?.stop(); } catc
 function restartDraw() { destroyDraw(); initDraw(); }
 const getTD = id => { try { return draw.getSnapshotFeature?.(id) || draw.getSnapshot().find(f => f.id === id); } catch (e) { return null; } };
 const round9 = c => typeof c[0] === 'number' ? c.map(v => Math.round(v * 1e9) / 1e9) : c.map(round9);
-const drawTarget = () => layerById(S.ui.activeLayer);
+const TOOL_GEOM = { polygon: 'Polygon', rectangle: 'Polygon', circle: 'Polygon', freehand: 'Polygon', linestring: 'LineString', point: 'Point' };
+const drawTarget = g => HK.drawTarget ? HK.drawTarget(g) : layerById(S.ui.activeLayer);
 
 function setTool(t) {
   if (measure.mode) cancelMeasure();
@@ -1736,7 +2217,7 @@ function setTool(t) {
   try { draw?.setMode(t === 'none' ? 'static' : t); } catch (e) { console.warn(e); }
   if (t !== 'none' && !S.ui.pickArea) {
     popup.remove(); setHover(null);
-    const tgt = drawTarget();
+    const tgt = drawTarget(TOOL_GEOM[t]);
     showChip(`${icon(TOOL_ICON[t], 15)} <span>${SHAPE_LABEL[t]} → ${esc(tgt ? tgt.name : 'new layer “Sketch”')}</span><span class="hint">${t === 'point' ? 'Click to place' : t === 'polygon' || t === 'linestring' ? 'Click to add vertices · click the last point to finish' : 'Click, move, click to finish'} · Esc to cancel</span>`);
   } else if (t === 'none') hideChip();
   renderToolbar();
@@ -1748,7 +2229,7 @@ function onDrawFinish(id, ctx) {
   try { draw.removeFeatures([id]); } catch (e) {}
   if (S.ui.pickArea) { S.ui.pickArea = false; setTool('none'); try { setArea({ name: 'Custom area', bbox: turf.bbox(f) }); } catch (e) {} return; }
   const mode = ctx?.mode || S.ui.tool;
-  let layer = drawTarget();
+  let layer = drawTarget(f.geometry.type);
   if (!layer) { layer = newLayer({ name: 'Sketch', fields: [{ name: 'name', type: 'text' }] }); addLayer(layer); toast('info', 'Created layer “Sketch”', 'New shapes go to the highlighted layer in the Layers panel.'); }
   recordUndo(layer);
   const fid = layer.nextId++, props = { _fid: fid };
@@ -1778,7 +2259,7 @@ function measureText(g) {
 }
 function startEdit(layerId, fid) {
   const layer = layerById(layerId), f = featureOf(layer, fid);
-  if (!f || !draw) return;
+  if (!f || !draw || !editGuard(layer)) return;
   const t = f.geometry.type;
   if (t.startsWith('Multi')) { toast('warn', 'Multi-part shapes can’t be edited directly', 'Explode it into single parts first, then edit each part.', { action: { label: 'Explode into parts', fn: () => explodeFeatures(layer, [fid]) } }); return; }
   const mode = t === 'Polygon' ? 'polygon' : t === 'LineString' ? 'linestring' : 'point';
@@ -1828,7 +2309,7 @@ function swapHistory(from, to, label) {
 const undo = () => swapHistory(undoStack, redoStack, 'undo'), redo = () => swapHistory(redoStack, undoStack, 'redo');
 
 function deleteFeatures(layerId, fids) {
-  const l = layerById(layerId); if (!l || !fids?.length) return;
+  const l = layerById(layerId); if (!l || !fids?.length || !editGuard(l)) return;
   if (S.editing?.layerId === layerId && fids.includes(S.editing.fid)) cancelEdit();
   recordUndo(l);
   const s = new Set(fids);
@@ -1839,6 +2320,7 @@ function deleteFeatures(layerId, fids) {
   toast('info', `Deleted ${fids.length} feature${fids.length > 1 ? 's' : ''}`, '', { action: { label: 'Undo', fn: undo } });
 }
 function explodeFeatures(l, fids = null) { // multi-part → one feature per part; the first part keeps the original id
+  if (!editGuard(l)) return;
   const s = fids && new Set(fids), out = [], newIds = [];
   let n = 0;
   recordUndo(l);
@@ -1892,6 +2374,17 @@ function renderMeasure() {
     }
   } catch (e) {}
   map.getSource('u-measure').setData({ type: 'FeatureCollection', features: measure.mode ? fs : [] });
+  // running value next to the cursor: total so far (+ the segment being drawn), or the area once there are 3 points
+  const tip = $('#measure-tip'), live = measure.mode && !measure.done && measure.cursor && measure.px && measure.pts.length;
+  tip.classList.toggle('hidden', !live);
+  if (live) {
+    const dist = ft => ft < 5280 ? `${nf(ft)} ft` : `${nf(ft / 5280, 2)} mi`;
+    const seg = turf.distance(measure.pts.at(-1), measure.cursor, { units: 'feet' });
+    let t = '';
+    try { t = measure.mode === 'measure-area' && pts.length >= 3 ? `${nf(turf.area(turf.polygon([[...pts, pts[0]]])) / 4046.8564224, 2)} ac`
+      : `${dist(turf.length(turf.lineString(pts), { units: 'feet' }))}${measure.pts.length > 1 ? `<span class="s">+${dist(seg)}</span>` : ''}`; } catch (e) {}
+    tip.innerHTML = t; tip.style.left = measure.px.x + 'px'; tip.style.top = measure.px.y + 'px';
+  }
   if (measure.mode) showChip(`${icon(measure.mode === 'measure-dist' ? 'ruler' : 'area', 15)} ${text || '<span>Click to add points</span>'} <span class="hint">${measure.done ? 'Click to start over · Esc to clear' : 'Double-click or Enter to finish · Esc to cancel'}</span>`);
 }
 function showChip(html) { const c = $('#measure-chip'); c.innerHTML = html; c.classList.remove('hidden'); c.style.top = S.editing ? '64px' : '12px'; }
@@ -2020,7 +2513,7 @@ function fieldMenu(l, name, anchor) {
     { sep: true },
     { label: S.selection?.layerId === l.id ? 'Set value for selected…' : 'Set value for all…', icon: 'fields', fn: () => calcDialog(l, name) },
     { label: 'Use as labels', checked: l.style.labelField === name, fn: () => { l.style.labelField = l.style.labelField === name ? null : name; bumpData(l); syncLayer(l); changed('layers'); } },
-    { label: 'Color by this field', checked: l.style.styleBy === name, fn: () => { l.style.styleBy = l.style.styleBy === name ? null : name; l.style.hidden = []; bumpData(l); syncLayer(l); changed('layers'); } },
+    { label: 'Color by this field', checked: l.style.styleBy === name, fn: () => { l.style.styleBy = l.style.styleBy === name ? null : name; l.style.hidden = []; l.style.cats = {}; bumpData(l); syncLayer(l); changed('layers'); } },
     { label: 'Rename…', icon: 'edit', fn: () => renameFieldDialog(l, name) },
     { label: 'Change type…', icon: 'fields', fn: () => fieldsDialog(l) },
     { sep: true },
@@ -2053,17 +2546,20 @@ function renderInspector() {
   } catch (e) {}
   const fieldsHtml = l.fields.length ? l.fields.map((fd, i) => `<div class="field"><label for="ia-${i}">${esc(fd.name)} <span class="ttag">${fd.type}</span></label>${inputFor(fd, p[fd.name]).replace('class="input"', `class="input" id="ia-${i}" data-f="${i}"`)}</div>`).join('')
     : `<div class="res-params">No attributes yet.</div>`;
-  body.innerHTML = `<div class="insp"><h2>${esc(featureName(f, l))}</h2>
+  const ro = !canEdit(l), dsc = HK.describe?.(f, l);
+  body.innerHTML = `<div class="insp"><h2>${esc(dsc?.title || featureName(f, l))}</h2>
     <div class="sub"><span class="pill"><i style="background:${layerColor(l)}"></i>${esc(l.name)}</span><span class="pill">${esc(g.type)}</span><span class="pill mono">#${p._fid}</span></div>${metrics}
-    <div class="sect">Attributes <button class="btn sm ghost" data-a="addf">${icon('plus', 12)} Field</button></div>
+    <div class="sect">Attributes ${ro ? '' : `<button class="btn sm ghost" data-a="addf">${icon('plus', 12)} Field</button>`}</div>
     <div class="attrs">${fieldsHtml}</div>
     <div class="sect">Actions</div><div class="actions-row">
     <button class="btn sm" data-a="zoom">${icon('target', 13)} Zoom to</button>
-    <button class="btn sm" data-a="edit">${icon(/^Multi/.test(g.type) ? 'split' : 'edit', 13)} ${/^Multi/.test(g.type) ? 'Explode parts' : 'Edit shape'}</button>
+    ${ro ? '' : `<button class="btn sm" data-a="edit">${icon(/^Multi/.test(g.type) ? 'split' : 'edit', 13)} ${/^Multi/.test(g.type) ? 'Explode parts' : 'Edit shape'}</button>`}
     <button class="btn sm" data-a="buffer">${icon('buffer', 13)} Buffer…</button>
     <button class="btn sm" data-a="print">${icon('download', 13)} Print…</button>
     <button class="btn sm ghost" data-a="area">${icon('lock', 13)} Use as GIS area</button>
-    <button class="btn sm danger" data-a="delete">${icon('trash', 13)} Delete</button></div></div>`;
+    ${ro ? '' : `<button class="btn sm danger" data-a="delete">${icon('trash', 13)} Delete</button>`}</div></div>`;
+  if (ro) body.querySelectorAll('.attrs .input').forEach(i => { i.readOnly = true; i.disabled = i.tagName === 'SELECT'; });
+  const card = HK.inspector?.(f, l); if (card) body.querySelector('.insp .sub').after(card);
   const A = (a, fn) => { const b = body.querySelector(`[data-a=${a}]`); if (b) b.onclick = fn; };
   A('zoom', () => { try { fitBbox(turf.bbox(f)); } catch (e) {} });
   A('edit', () => /^Multi/.test(g.type) ? explodeFeatures(l, [p._fid]) : startEdit(l.id, p._fid));
@@ -2083,26 +2579,28 @@ function renderInspector() {
 function legendItems({ layerIds = null } = {}) {
   const out = [];
   for (const l of S.layers) {
-    if (layerIds ? !layerIds.includes(l.id) : !l.visible) continue;
+    if (layerIds ? !layerIds.includes(l.id) : !shown(l)) continue;
     if (!l.data.features.length) continue;
     const g = new Set(l.data.features.slice(0, 200).map(f => f.geometry?.type || ''));
     const kind = [...g].some(t => /Polygon/.test(t)) ? 'fill' : [...g].some(t => /Line/.test(t)) ? 'line' : 'point';
-    const pal = styleByPalette(l);
-    out.push({ label: l.name, color: layerColor(l), stroke: l.style.stroke || layerColor(l), opacity: l.style.fillOpacity, kind,
-               sub: pal && pal.length ? pal.slice(0, 10).map(([v, c]) => ({ label: v, color: c })) : null });
+    const pal = styleByPalette(l), dim = !layerIds && dimmed(l), c = dim ? cssVar('--ink-subtle') : layerColor(l);
+    out.push({ label: l.name, color: c, stroke: dim ? c : l.style.stroke || c, opacity: l.style.fillOpacity, kind,
+               sub: !dim && pal && pal.length ? pal.slice(0, 10).map(([v, c]) => ({ label: v, color: c })) : null });
   }
   return out;
 }
 function renderLegend() {
   const box = $('#map-legend');
-  const items = legendItems();
+  const items = HK.legend?.() || legendItems();
   if (!items.length || S.present?.noLegend) { box.classList.add('hidden'); return; }
   box.classList.remove('hidden');
   const sw = it => it.kind === 'fill' ? `<i class="sw-f" style="background:${it.color}4d;border-color:${it.stroke}"></i>` : it.kind === 'line' ? `<i class="sw-l" style="background:${it.stroke}"></i>` : `<i class="sw-p" style="background:${it.color}"></i>`;
-  box.innerHTML = `<button class="lg-head" aria-expanded="${S.ui.legend}">${icon('layers', 13)} Legend ${icon('chevron', 12)}</button>${S.ui.legend ? `<div class="lg-body">${items.map(it => `<div class="lg-row">${sw(it)}<span>${esc(it.label)}</span></div>${it.sub ? it.sub.map(s => `<div class="lg-row sub"><i class="sw-p" style="background:${s.color}"></i><span>${esc(s.label)}</span></div>`).join('') : ''}`).join('')}
+  box.innerHTML = `<button class="lg-head" aria-expanded="${S.ui.legend}">${icon('layers', 13)} Legend ${icon('chevron', 12)}</button>${S.ui.legend ? `<div class="lg-body">${items.map((it, i) => (HK.legendClick && it.key ? `<button class="lg-row lg-btn" data-i="${i}" title="Change how “${esc(it.label)}” looks">${sw(it)}<span>${esc(it.label)}</span></button>` : `<div class="lg-row">${sw(it)}<span>${esc(it.label)}</span></div>`)
+      + (it.sub ? it.sub.map(s => `<div class="lg-row sub"><i class="sw-p" style="background:${s.color}"></i><span>${esc(s.label)}</span></div>`).join('') : '')).join('')}
     ${S.ui.mask && S.ui.area ? `<div class="lg-row"><i class="sw-l dash"></i><span>GIS area</span></div>` : ''}</div>` : ''}`;
   box.classList.toggle('collapsed', !S.ui.legend);
   box.querySelector('.lg-head').onclick = () => { S.ui.legend = !S.ui.legend; renderLegend(); };
+  box.querySelectorAll('.lg-btn').forEach(b => b.onclick = () => HK.legendClick(items[+b.dataset.i], b));
 }
 
 /* --- Settings & branding --- */
@@ -2162,9 +2660,14 @@ const PAGES = {
 const LIBS = {
   jspdf: 'https://cdn.jsdelivr.net/npm/jspdf@4.2.1/dist/jspdf.umd.min.js',
   shpwrite: 'https://cdn.jsdelivr.net/npm/@mapbox/shp-write@0.4.3/shpwrite.js',
+  libredwg: 'https://cdn.jsdelivr.net/npm/@mlightcad/libredwg-web@0.8.1/',
 };
 const libPromises = {};
-function needLib(name) { // lazy-load heavy export libraries on first use
+function needLib(name) { // lazy-load heavy libraries on first use
+  // shortcut: DWG parses on the main thread (UI pauses ~1–3 s on big drawings); move to a Blob module worker if users import >20 MB DWGs
+  if (name === 'libredwg') return libPromises[name] ||= import(LIBS.libredwg + 'dist/libredwg-web.js')
+    .then(async m => ({ lib: await m.LibreDwg.create(LIBS.libredwg + 'wasm'), Dwg_File_Type: m.Dwg_File_Type }))
+    .catch(e => { delete libPromises[name]; throw new Error(`Couldn’t load the DWG reader (check internet connection). ${e.message || ''}`); });
   return libPromises[name] ||= new Promise((res, rej) => {
     const s = document.createElement('script'); s.src = LIBS[name];
     s.onload = () => res(name === 'jspdf' ? window.jspdf.jsPDF : window.shpwrite);
@@ -2452,29 +2955,32 @@ async function exhibitWizard({ fit = null } = {}) {
     ...(fitF ? [['feature', `Selected: ${featureName(fitF, fitL)}`, 'Zoomed to this feature, highlighted']] : []),
     ...S.presets.views.map((v, i) => [`preset:${i}`, `Saved view: ${v.name}`, '']),
   ];
+  // text boxes start empty; the grey placeholder is what prints when a box is left blank
+  const hint = { title: fitF ? featureName(fitF, fitL) : S.workspace.name === 'Untitled workspace' ? 'Map' : S.workspace.name, date: today() };
+  hint.file = `${slug(hint.title)}-map`;
   const st = await wizard({ title: 'Map print', sub: 'A print-ready sheet with title block, legend, north arrow and scale.', steps: [
     { title: 'Map', render: v => { v.innerHTML = `
       <div class="field"><label>Area</label>${radioGroup('area', areas, fit && fitF ? 'feature' : 'view')}</div>
       <div class="field"><label>Basemap</label>${basemapRadios('light')}</div>
-      <div class="field"><label>Layers on the map</label>${layerChecks('layers', l => l.visible)}</div>
+      <div class="field"><label>Layers on the map</label>${layerChecks('layers', shown)}</div>
       <label class="check"><input type="checkbox" data-k="labels" checked> Show labels (layers with a label field)</label>
       ${S.ui.area ? `<label class="check"><input type="checkbox" data-k="mask" ${S.ui.mask ? 'checked' : ''}> Dim outside the GIS area</label>` : ''}`; bindRadios(v); },
       validate: s => !s.layers.length && 'Pick at least one layer' },
     { title: 'Title block', render: v => { v.innerHTML = `
-      <div class="field"><label>Title</label><input class="input" data-k="title" value="${esc(fitF ? featureName(fitF, fitL) : S.workspace.name === 'Untitled workspace' ? 'Map' : S.workspace.name)}"></div>
-      <div class="field"><label>Subtitle</label><input class="input" data-k="subtitle" value="${esc(S.ui.area?.name || '')}"></div>
-      <div class="grid2"><div class="field"><label>Map / exhibit no.</label><input class="input" data-k="number" placeholder="e.g. EX-01"></div>
-        <div class="field"><label>Date</label><input class="input" data-k="date" value="${esc(today())}"></div>
+      <div class="field"><label>Title</label><input class="input" data-k="title" placeholder="${esc(hint.title)}"></div>
+      <div class="field"><label>Subtitle (optional)</label><input class="input" data-k="subtitle"></div>
+      <div class="grid2"><div class="field"><label>Map / exhibit no. (optional)</label><input class="input" data-k="number"></div>
+        <div class="field"><label>Date</label><input class="input" data-k="date" placeholder="${esc(hint.date)}"></div>
         <div class="field"><label>Prepared by</label><input class="input" data-k="by" value="${esc(S.settings.preparedBy)}"></div>
         <div class="field"><label>Organization</label><input class="input" data-k="org" value="${esc(S.settings.org)}"></div></div>
-      <div class="field"><label>Notes (optional)</label><textarea class="input" data-k="notes" placeholder="Shown in the title block"></textarea></div>
+      <div class="field"><label>Notes (optional)</label><textarea class="input" data-k="notes"></textarea></div>
       <div class="res-params">${S.settings.logo ? 'Your logo will appear in the title block.' : 'Tip: add a logo in Settings.'}</div>`; } },
     { title: 'Output', render: v => { v.innerHTML = `
       <div class="field"><label>Page size</label>${pageSelect()}</div>
       <div class="field"><label>Format</label>${radioGroup('format', [['pdf', 'PDF', 'Vector text, best for print'], ['png', 'PNG image', 'For slides and email']], 'pdf')}</div>
-      <div class="field"><label>File name</label><input class="input" data-k="file" value="${esc(slug(fitF ? featureName(fitF, fitL) : S.workspace.name))}-map"></div>`; bindRadios(v); } },
+      <div class="field"><label>File name</label><input class="input" data-k="file" placeholder="${esc(hint.file)}"></div>`; bindRadios(v); } },
   ], finish: 'Create map' });
-  if (st) wireUpExport(makeExhibit)(st, fitRef);
+  if (st) { for (const k of ['title', 'date', 'file']) st[k] = st[k]?.trim() || hint[k]; wireUpExport(makeExhibit)(st, fitRef); }
 }
 async function makeExhibit(prog, st, fitRef) {
   const P = PAGES[st.page], B = sheetBoxes(P), C = PRINT();
@@ -2507,16 +3013,17 @@ async function dataExportWizard() {
   if (!S.layers.length) return toast('info', 'Load some layers first');
   const st = await wizard({ title: 'Data export', sub: 'Share layers, with your edits, with GIS, CAD or Google Earth users.', steps: [
     { title: 'Layers', render: v => { v.innerHTML = `
-      <div class="field"><label>Layers</label>${layerChecks('layers', l => l.visible)}</div>
+      <div class="field"><label>Layers</label>${layerChecks('layers', shown)}</div>
       <label class="check"><input type="checkbox" data-k="selOnly" ${S.selection ? '' : 'disabled'}> Only selected features${S.selection ? ` (${nf(S.selection.fids.length)} in “${esc(layerById(S.selection.layerId)?.name)}”)` : ' (nothing selected)'}</label>`; },
       validate: s => !s.layers.length && 'Pick at least one layer' },
     { title: 'Format', render: v => { v.innerHTML = `
       <div class="field"><label>Format</label>${radioGroup('format', [['shp', 'Shapefile (.zip)', 'ArcGIS, QGIS, CAD · WGS84'], ['geojson', 'GeoJSON', 'Web & modern GIS'], ['kml', 'KML', 'Google Earth'], ['csv', 'CSV table', 'Excel · attributes, area, centroid']], 'shp')}</div>
-      <div class="field"><label>File name</label><input class="input" data-k="file" value="${esc(slug(S.workspace.name === 'Untitled workspace' ? 'atlas-export' : S.workspace.name))}"></div>
+      <div class="field"><label>File name</label><input class="input" data-k="file" placeholder="${esc(fileHint('atlas-export'))}"></div>
       <div class="res-params">Several layers are bundled into one .zip.</div>`; bindRadios(v); } },
   ], finish: 'Export' });
-  if (st) wireUpExport(makeDataExport)(st);
+  if (st) { st.file = st.file?.trim() || fileHint('atlas-export'); wireUpExport(makeDataExport)(st); }
 }
+const fileHint = fallback => slug(S.workspace.name === 'Untitled workspace' ? fallback : S.workspace.name);
 function csvOf(feats) {
   const keys = [...new Set(feats.flatMap(f => Object.keys(f.properties)))];
   const q = v => { const s = String(v ?? ''); return /[",\n]/.test(s) ? `"${s.replace(/"/g, '""')}"` : s; };
@@ -2563,17 +3070,18 @@ async function packageWizard() {
   if (!S.layers.length) return toast('info', 'Load some layers first');
   const st = await wizard({ title: 'Project package', sub: 'One .zip with this project and every layer as shapefiles, ready to send to someone else.', steps: [
     { title: 'Package', render: v => { v.innerHTML = `
-      <div class="field"><label>Package name</label><input class="input" data-k="file" value="${esc(slug(S.workspace.name === 'Untitled workspace' ? 'atlas-project' : S.workspace.name))}"></div>
+      <div class="field"><label>Package name</label><input class="input" data-k="file" placeholder="${esc(fileHint('atlas-project'))}"></div>
       <div class="res-params">Contains <b>${nf(S.layers.filter(l => !l.excludeFromSave).length)} layer(s)</b>, their styles, fields, saved views and the GIS area.<br>
-        Others reopen it by dropping the .zip on Atlas. Unzipped, the <span class="mono">shapefiles</span> folder opens in ArcGIS, QGIS or CAD.</div>`; } },
+        Others reopen it by dropping the .zip on Atlas. Unzipped, the <span class="mono">shapefiles</span> folder opens in ArcGIS, QGIS or CAD.</div>
+      <label class="check"><input type="checkbox" data-k="shapefiles" checked> Include shapefiles for other GIS (slower and larger for big projects)</label>`; } },
   ], finish: 'Create package', finishIcon: 'folder' });
-  if (st) wireUpExport(makePackage)(st);
+  if (st) { st.file = st.file?.trim() || fileHint('atlas-project'); wireUpExport(makePackage)(st); }
 }
 async function makePackage(prog, st) {
   const name = slug(st.file || 'atlas-project'), zip = new JSZip(), root = zip.folder(name), used = new Set();
   if (S.editing) finishEdit(true);
   root.file(`${name}.atlas.json`, JSON.stringify({ ...serialize(), name: S.workspace.name }));
-  const layers = S.layers.filter(l => !l.excludeFromSave);
+  const layers = st.shapefiles === false ? [] : S.layers.filter(l => !l.excludeFromSave); // shapefile copies are optional: slow for very large layers
   for (const [i, l] of layers.entries()) {
     let base = slug(l.name); for (let n = 2; used.has(base); n++) base = `${slug(l.name)}-${n}`; used.add(base);
     const feats = layerExportFC(l, false);
@@ -2583,7 +3091,7 @@ async function makePackage(prog, st) {
     }
     prog.update((i + 1) / layers.length);
   }
-  root.file('README.txt', `${S.workspace.name}\r\nCreated ${today()} with Atlas.\r\n\r\nReopen in Atlas: drop the .zip on the map, or open ${name}.atlas.json.\r\nOther GIS: the shapefiles folder has one shapefile per layer and geometry type (WGS84).\r\n`);
+  root.file('README.txt', `${S.workspace.name}\r\nCreated ${today()} with Atlas.\r\n\r\nReopen in Atlas: drop the .zip on the map, or open ${name}.atlas.json.\r\n${layers.length ? 'Other GIS: the shapefiles folder has one shapefile per layer and geometry type (WGS84).\r\n' : ''}`);
   await saveText(await zip.generateAsync({ type: 'blob', compression: 'DEFLATE' }), `${name}.atlas.zip`, 'application/zip');
 }
 async function makeDataExport(prog, st) {
@@ -2620,7 +3128,8 @@ async function copyMapImage() {
 async function presentDialog() {
   if (!S.layers.length) return toast('info', 'Load some layers first');
   const l = layerById(S.ui.activeLayer) || S.layers[0], n = Math.min(l.data.features.length, 200);
-  const opts = [...(S.presets.views.length ? [['views', `Saved views (${S.presets.views.length})`, 'Step through your view presets']] : []),
+  const nv = S.presets.views.length + (EXT.defaultView ? 1 : 0);
+  const opts = [...(nv ? [['views', `Saved views (${nv})`, 'Step through your view presets']] : []),
     ...(n ? [['features', `Features of “${l.name}” (${n})`, l.data.features.length > 200 ? 'The first 200' : 'One stop per feature']] : []),
     ['overview', 'Overview only', 'Full-screen map with the legend']];
   const body = el(`<div>${radioGroup('kind', opts, opts[0][0])}<label class="check" style="margin-top:10px"><input type="checkbox" data-k="full" checked> Full screen</label><div class="res-params" style="margin-top:8px">Use ← → or the on-screen arrows. Press Esc to exit.</div></div>`);
@@ -2628,7 +3137,7 @@ async function presentDialog() {
   if (!await modal({ title: 'Present', sub: 'Hide the editing tools and walk through the map.', body, ok: 'Start', okIcon: 'play' })) return;
   const st = collectInputs(body, {});
   let stops = [];
-  if (st.kind === 'views') stops = S.presets.views.map(v => ({ title: v.name, sub: 'Saved view', go: () => applyView(v) }));
+  if (st.kind === 'views') stops = [...(EXT.defaultView ? [{ title: EXT.defaultView.name, sub: 'Default view', go: goDefaultView }] : []), ...S.presets.views.map(v => ({ title: v.name, sub: 'Saved view', go: () => applyView(v) }))];
   else if (st.kind === 'features') stops = l.data.features.slice(0, 200).map(f => ({ title: featureName(f, l), sub: l.name,
     go: () => { select(l.id, [f.properties._fid], { openPanel: false }); try { fitBbox(expandBbox(turf.bbox(f), 1500), { padding: 120, duration: 1200 }); } catch (e) {} } }));
   else stops = [{ title: S.workspace.name === 'Untitled workspace' ? (S.ui.area?.name || 'Overview') : S.workspace.name, sub: `${S.layers.length} layer(s)`, go: homeView }];
@@ -2670,14 +3179,14 @@ document.addEventListener('fullscreenchange', () => { if (!document.fullscreenEl
 const slug = s => String(s || 'workspace').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 60) || 'workspace';
 function serialize({ forAutosave = false } = {}) {
   const c = map.getCenter();
-  const lyr = l => ({ id: l.id, name: l.name, source: l.source, visible: l.visible, style: l.style, fields: l.fields, excludeFromSave: l.excludeFromSave, nextId: l.nextId, data: l.data });
+  const lyr = l => ({ id: l.id, name: l.name, group: l.group, legendOpen: l.legendOpen, source: l.source, visible: l.visible, style: l.style, fields: l.fields, excludeFromSave: l.excludeFromSave, nextId: l.nextId, data: l.data });
   return {
     schemaVersion: CFG.SCHEMA_VERSION, app: 'Atlas', name: S.workspace.name, savedAt: new Date().toISOString(),
     view: { center: [c.lng, c.lat], zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing(), mode: S.ui.mode },
     ui: { theme: S.ui.theme, basemap: S.ui.basemap, basemapAuto: S.ui.basemapAuto, activeLayer: S.ui.activeLayer, mask: S.ui.mask, legend: S.ui.legend, area: S.ui.area, coord: S.ui.coord,
-          panels: { left: isOpen('left'), right: isOpen('right'), bottom: isOpen('bottom') } },
+          closedGroups: S.ui.closedGroups || [], panels: { left: isOpen('left'), right: isOpen('right'), bottom: isOpen('bottom') } },
     layers: S.layers.filter(l => forAutosave || !l.excludeFromSave).map(lyr),
-    presets: S.presets, areas: S.areas,
+    presets: S.presets, areas: S.areas, groupStyle: S.groupStyle, emptyGroups: S.emptyGroups, hiddenGroups: S.hiddenGroups,
     settings: { org: S.settings.org, preparedBy: S.settings.preparedBy, logo: S.settings.logo, pageSize: S.settings.pageSize },
   };
 }
@@ -2720,10 +3229,15 @@ function loadWorkspace(ws, { handle = null, fromAutosave = false } = {}) {
   S.workspace = { name: ws.name || 'Untitled workspace', handle, dirty: false };
   S.presets = { views: ws.presets?.views || [], styles: ws.presets?.styles || [] };
   S.areas = Array.isArray(ws.areas) ? ws.areas.filter(a => validBbox(a?.bbox)) : [];
+  S.groupStyle = ws.groupStyle && typeof ws.groupStyle === 'object' ? ws.groupStyle : {};
+  S.emptyGroups = Array.isArray(ws.emptyGroups) ? ws.emptyGroups.filter(g => typeof g === 'string' && g) : [];
+  S.hiddenGroups = Array.isArray(ws.hiddenGroups) ? ws.hiddenGroups.filter(g => typeof g === 'string' && g) : [];
+  S.ui.focus = null; S.ui.closedGroups = [];
   const U = ws.ui || {};
   if (U.theme && U.theme !== S.ui.theme) { S.ui.theme = U.theme; document.documentElement.dataset.theme = U.theme; try { localStorage.setItem('atlas-theme', U.theme); } catch (e) {} }
   S.ui.basemapAuto = U.basemapAuto ?? true;
   S.ui.activeLayer = layerById(U.activeLayer)?.id || S.layers[0]?.id || null;
+  S.ui.closedGroups = Array.isArray(U.closedGroups) ? U.closedGroups.filter(g => typeof g === 'string') : [];
   S.ui.mask = U.mask ?? S.ui.mask; S.ui.legend = U.legend ?? true; S.ui.coord = U.coord || S.ui.coord;
   S.ui.area = validBbox(U.area?.bbox) ? U.area : null;
   if (ws.settings) { for (const k of ['org', 'preparedBy', 'logo', 'pageSize']) if (ws.settings[k] != null && ws.settings[k] !== '') S.settings[k] = ws.settings[k]; saveSettings(); }
@@ -2766,9 +3280,42 @@ async function saveWorkspace(saveAs = false) {
   S.workspace.dirty = false; emit('workspace');
   if (excluded) toast('info', `${excluded} layer(s) excluded from the file`, 'They were marked “Exclude from saved workspace”.');
 }
-async function openWorkspaceFile(file, handle = null) {
+const runSaveAction = () => EXT.saveAction ? EXT.saveAction(window.Atlas) : saveWorkspace();
+async function saveWorkspaceData(ws, name) {
+  return saveText(JSON.stringify(ws), name, 'application/json');
+}
+function mergeWorkspaceLayers(ws) {
+  ws = migrate(ws);
+  const ids = new Set(S.layers.map(l => l.id)), added = [], skipped = [];
+  for (const x of ws.layers) {
+    const l = newLayer({ ...x, data: x.data || { type: 'FeatureCollection', features: [] } });
+    if (ids.has(l.id)) { skipped.push(l.name); continue; }
+    if (!Array.isArray(l.fields)) l.fields = inferFields(l.data.features);
+    ensureIds(l); bumpData(l); ids.add(l.id); added.push(l);
+  }
+  if (added.length) {
+    S.layers.push(...added);
+    S.ui.activeLayer = added.at(-1).id;
+    syncAllLayers();
+    changed('layers', 'table');
+  }
+  toast(added.length ? 'success' : 'info', added.length ? `Added ${added.length} layer(s)` : 'No new layers added',
+    skipped.length ? `${skipped.length} layer(s) already exist and were skipped.` : undefined);
+}
+async function chooseWorkspaceImport(ws) {
+  const body = el(`<div>
+    <label class="check"><input type="radio" name="workspace-import" value="merge" checked> Add its ${nf(ws.layers.length)} layer(s) to the open ALP</label>
+    <label class="check"><input type="radio" name="workspace-import" value="replace"> Replace the open project with this workspace</label>
+  </div>`);
+  if (!await modal({ title: 'Open workspace', sub: 'Choose how to use this workspace.', body, ok: 'Continue' })) return;
+  const choice = body.querySelector('input[name="workspace-import"]:checked')?.value;
+  if (choice === 'merge') mergeWorkspaceLayers(ws);
+  else if (choice === 'replace') loadWorkspace(ws);
+}
+async function openWorkspaceFile(file, handle = null, { fromBundle = false } = {}) {
   try {
     const ws = JSON.parse(await file.text());
+    if (BUNDLE && !fromBundle) { await chooseWorkspaceImport(migrate(ws)); return; }
     if (S.layers.length && S.workspace.dirty && !await confirmDialog('Replace the current workspace?', 'Unsaved changes in the current workspace will be lost.', 'Open workspace')) return;
     loadWorkspace(ws, { handle });
   } catch (e) { toast('error', `Couldn't open ${file.name}`, e.message, { detail: e.stack }); }
@@ -2784,11 +3331,58 @@ async function openWorkspacePicker() {
 }
 const scheduleAutosave = debounce(async () => {
   if (!map) return;
-  try { await idbSet('atlas-autosave', { savedAt: Date.now(), ws: serialize({ forAutosave: true }) }); } catch (e) { console.warn('autosave failed', e); }
+  try { await idbSet(EXT.autosaveKey || 'atlas-autosave', { savedAt: Date.now(), ws: serialize({ forAutosave: true }), bundle: BUNDLE?.id, bundleLayerIds: bundleLayerIdsKnown ? [...bundleLayerIds] : null }); } catch (e) { console.warn('autosave failed', e); }
 }, 2000);
+/* A delivered folder ships its project in a sibling script (window.ATLAS_BUNDLE = { id, name, zip: base64 .atlas.zip | json: .atlas.json text }),
+   since file:// pages can't read files (scripts/build-client-folder.mjs).
+   First launch opens it; later launches resume this project's own autosave, so the recipient's work survives. */
+const BUNDLE = window.ATLAS_BUNDLE?.zip || window.ATLAS_BUNDLE?.json ? window.ATLAS_BUNDLE : null;
+let bundleLayerIds = new Set(), bundleLayerIdsKnown = false;
+let bundleLoading = !!BUNDLE; // first open or resume in progress: the start screen shows a loading card instead
+function bundleBytes() {
+  const b64 = BUNDLE.zip, raw = atob(b64), bin = new Uint8Array(raw.length);
+  for (let i = 0; i < raw.length; i++) bin[i] = raw.charCodeAt(i);
+  return bin;
+}
+async function readBundledLayerIds() {
+  if (BUNDLE.json) {
+    const ws = JSON.parse(BUNDLE.json);
+    if (!Array.isArray(ws.layers)) throw new Error('The delivered project has no workspace layers.');
+    return ws.layers.map(l => l.id).filter(Boolean);
+  }
+  const zip = await JSZip.loadAsync(bundleBytes());
+  const file = Object.values(zip.files).find(f => !f.dir && /\.atlas\.json$/i.test(f.name));
+  if (!file) throw new Error('The delivered project package has no .atlas.json workspace.');
+  const ws = JSON.parse(await file.async('string'));
+  if (!Array.isArray(ws.layers)) throw new Error('The delivered project has no workspace layers.');
+  return ws.layers.map(l => l.id).filter(Boolean);
+}
+async function openBundle() {
+  const prog = bundleLoading ? null : progressToast(`Opening ${BUNDLE.name}…`); // at launch the loading card says it
+  try {
+    if (BUNDLE.json) await handleFiles([new File([BUNDLE.json], `${slug(BUNDLE.name)}.atlas.json`)], { noZoom: true, quiet: bundleLoading, fromBundle: true });
+    else await handleFiles([new File([bundleBytes()], `${slug(BUNDLE.name)}.atlas.zip`)], { noZoom: true, quiet: bundleLoading, fromBundle: true });
+    bundleLayerIds = new Set(S.layers.map(l => l.id)); bundleLayerIdsKnown = true; scheduleAutosave();
+  } catch (e) { toast('error', `Couldn’t open ${BUNDLE.name}`, e.message); } finally { prog?.close(); }
+}
 async function checkAutosave() {
   try {
-    const a = (await idbGet('atlas-autosave')) || (await idbGet('ord-autosave'));
+    const a = EXT.autosaveKey ? await idbGet(EXT.autosaveKey) : (await idbGet('atlas-autosave')) || (await idbGet('ord-autosave'));
+    if (BUNDLE) {
+      if (!map.isStyleLoaded()) await new Promise(r => map.once('load', r)); // layers can only be added once the style is ready
+      try {
+        if (a?.ws && a.bundle === BUNDLE.id) {
+          if (Array.isArray(a.bundleLayerIds)) { bundleLayerIds = new Set(a.bundleLayerIds); bundleLayerIdsKnown = true; }
+          else {
+            try { bundleLayerIds = new Set(await readBundledLayerIds()); bundleLayerIdsKnown = true; }
+            catch (e) { console.warn('could not identify delivered layers', e); }
+          }
+          S.restore = a; restoreSession();
+        } else await openBundle();
+      }
+      finally { bundleLoading = false; renderEmpty(); renderLayerPanel(); if (EXT.defaultView) goDefaultView({ duration: 0 }); }
+      return;
+    }
     if (a?.ws && ((a.ws.layers?.length || 0) + (a.ws.drawings?.length || 0)) > 0) { S.restore = a; renderEmpty(); }
   } catch (e) { console.warn('autosave unavailable', e); }
 }
@@ -2807,6 +3401,10 @@ async function saveView() {
   S.presets.views.push({ name: n.trim(), center: [c.lng, c.lat], zoom: map.getZoom(), pitch: map.getPitch(), bearing: map.getBearing(), mode: S.ui.mode, visibleLayers: S.layers.filter(l => l.visible).map(l => l.id) });
   changed('presets'); toast('success', `Saved view “${n.trim()}”`);
 }
+function goDefaultView(opts = {}) {
+  const a = S.ui.area?.bbox, b = EXT.defaultView.bbox, px = (b[2] - b[0]) * 0.3, py = (b[3] - b[1]) * 0.3;
+  if (a && (a[0] > b[0] - px || a[1] > b[1] - py || a[2] < b[2] + px || a[3] < b[3] + py)) { setArea(null, { quiet: true }); toast('info', 'Camera lock released', `The GIS area didn’t contain “${EXT.defaultView.name}”, so panning was clamped.`); }
+  try { fitBbox(EXT.defaultView.bbox, { padding: 40, ...opts }); } catch (e) { console.warn(e); } }
 function applyView(v) {
   if (v.mode && v.mode !== S.ui.mode) { S.ui.mode = v.mode; applyMode(false); }
   if (v.visibleLayers) { const set = new Set(v.visibleLayers); for (const l of S.layers) l.visible = set.has(l.id); }
@@ -2816,12 +3414,13 @@ function applyView(v) {
 function viewsMenu(anchor) {
   openMenu(anchor, [
     { header: 'Saved views' },
+    ...(EXT.defaultView ? [{ label: `${EXT.defaultView.name} (default)`, icon: 'home', sc: 'Home', fn: goDefaultView }] : []), // built in: not in S.presets, so it can't be deleted
     ...(S.presets.views.length ? S.presets.views.map((v, i) => ({ label: v.name, icon: 'bookmark', fn: () => applyView(v), onDelete: () => { S.presets.views.splice(i, 1); changed('presets'); } }))
-      : [{ label: 'No saved views yet', disabled: true }]),
+      : EXT.defaultView ? [] : [{ label: 'No saved views yet', disabled: true }]),
     { sep: true },
     { label: 'Save current view…', icon: 'plus', fn: saveView },
     { label: 'Previous extent', icon: 'back', sc: 'Alt+←', fn: previousExtent },
-    { label: 'Zoom to area or data', icon: 'home', sc: 'Home', fn: homeView },
+    !EXT.defaultView && { label: 'Zoom to area or data', icon: 'home', sc: 'Home', fn: homeView },
   ]);
 }
 
@@ -2881,12 +3480,14 @@ async function askCRS(name, coord, hadPrj) {
     <p style="margin:0 0 12px;color:var(--ink-muted);font-size:13px">“${esc(name)}” uses projected coordinates${coord ? ` (e.g. <span class="mono">X ${nf(coord[0])}, Y ${nf(coord[1])}</span>)` : ''}${hadPrj ? ' and its .prj file could not be read' : ' and has no .prj file'}. Which coordinate system is it in?</p>
     ${CFG.crsOptions.map((o, i) => `<label class="check"><input type="radio" name="crs" value="${o.id}" ${i === 0 ? 'checked' : ''}> ${esc(o.label)}</label>`).join('')}
     <textarea class="input mono hidden" id="crs-custom" placeholder="+proj=tmerc … or PROJCS[…]" style="margin-top:6px;font-size:12px"></textarea>
+    ${batch?.left > 1 ? `<label class="check" style="margin-top:10px"><input type="checkbox" id="crs-all" checked> Use for the other ${batch.left - 1} file(s) in this import that need one</label>` : ''}
     <div class="res-params" style="margin-top:10px">Tip: copy the text of the data's .prj file into “Custom”, or include the .prj next time to skip this step.</div></div>`);
   const ta = body.querySelector('#crs-custom');
   body.querySelectorAll('input[name=crs]').forEach(r => r.onchange = () => ta.classList.toggle('hidden', r.value !== 'custom' || !r.checked));
   if (!await modal({ title: 'Choose coordinate system', body, ok: 'Convert' })) return null;
-  const v = body.querySelector('input[name=crs]:checked').value;
-  return v === 'custom' ? (ta.value.trim() || null) : v;
+  const v = body.querySelector('input[name=crs]:checked').value, out = v === 'custom' ? (ta.value.trim() || null) : v;
+  if (out && batch && body.querySelector('#crs-all')?.checked) batch.from = out;
+  return out;
 }
 async function askLatLon(name, fields, latF, lonF) {
   const opt = sel => fields.map(f => `<option ${f === sel ? 'selected' : ''}>${esc(f)}</option>`).join('');
@@ -2901,28 +3502,64 @@ function closeMenu() { $('#menu-root').innerHTML = ''; menuCleanup?.(); menuClea
 function openMenu(anchor, items) {
   closeMenu();
   const m = el('<div class="menu glass" role="menu"></div>');
-  for (const it of items) {
-    if (!it) continue;
-    if (it.sep) { m.append(el('<div class="sep"></div>')); continue; }
-    if (it.header) { m.append(el(`<div class="mh">${esc(it.header)}</div>`)); continue; }
-    const lead = it.checked != null ? `<span class="ck">${it.checked ? icon('check', 14) : ''}</span>` : it.icon ? icon(it.icon, 15) : '<span class="ck"></span>';
-    const b = el(`<button role="menuitem" class="${it.danger ? 'danger' : ''}" ${it.disabled ? 'disabled style="opacity:.5;cursor:default"' : ''}>${lead}<span style="flex:1">${esc(it.label)}</span>${it.sc ? `<span class="sc">${esc(it.sc)}</span>` : ''}${it.onDelete ? `<span class="del icon-btn sm" title="Delete" style="width:20px;height:20px">${icon('x', 12)}</span>` : ''}</button>`);
-    b.onclick = e => { if (it.disabled) return; if (e.target.closest('.del')) { it.onDelete(); closeMenu(); return; } closeMenu(); it.fn?.(); };
-    m.append(b);
-  }
+  const renderItems = (container, entries) => {
+    for (const it of entries) {
+      if (!it) continue;
+      if (it.sep) { container.append(el('<div class="sep"></div>')); continue; }
+      if (it.header) { container.append(el(`<div class="mh">${esc(it.header)}</div>`)); continue; }
+      const lead = it.checked != null ? `<span class="ck">${it.checked ? icon('check', 14) : ''}</span>` : it.icon ? icon(it.icon, 15) : '<span class="ck"></span>';
+      const b = el(`<button role="menuitem" class="${it.danger ? 'danger' : ''}" ${it.disabled ? 'disabled style="opacity:.5;cursor:default"' : ''}>${lead}<span style="flex:1">${esc(it.label)}</span>${it.sc ? `<span class="sc">${esc(it.sc)}</span>` : ''}${it.onDelete ? `<span class="del icon-btn sm" title="Delete" style="width:20px;height:20px">${icon('x', 12)}</span>` : ''}</button>`);
+      if (it.submenu) {
+        const branch = el('<div class="menu-branch"></div>'), row = el('<div class="menu-branch-row"></div>');
+        const children = el('<div class="menu-children" role="menu" hidden></div>');
+        const toggle = el(`<button class="menu-expand" aria-label="Expand ${esc(it.label)}" aria-expanded="false">${icon('chevron', 13)}</button>`);
+        b.setAttribute('aria-haspopup', 'menu'); b.setAttribute('aria-expanded', 'false');
+        const collapse = target => {
+          target.querySelectorAll('.menu-children').forEach(x => { x.hidden = true; });
+          target.querySelectorAll('[aria-haspopup="menu"], .menu-expand').forEach(x => { x.setAttribute('aria-expanded', 'false'); });
+        };
+        const expand = () => {
+          const open = children.hidden;
+          for (const other of container.querySelectorAll(':scope > .menu-branch')) if (other !== branch) collapse(other);
+          if (!open) collapse(branch);
+          children.hidden = !open;
+          toggle.setAttribute('aria-expanded', String(open));
+          b.setAttribute('aria-expanded', String(open));
+          toggle.setAttribute('aria-label', `${open ? 'Collapse' : 'Expand'} ${it.label}`);
+          if (open) position();
+        };
+        if (it.fn) b.onclick = e => { if (e.target.closest('.del')) { it.onDelete?.(); closeMenu(); return; } closeMenu(); it.fn(); };
+        else b.onclick = expand;
+        toggle.onclick = expand;
+        row.append(b, toggle);
+        renderItems(children, it.submenu);
+        branch.append(row, children);
+        container.append(branch);
+      } else {
+        b.onclick = e => { if (it.disabled) return; if (e.target.closest('.del')) { it.onDelete(); closeMenu(); return; } closeMenu(); it.fn?.(); };
+        container.append(b);
+      }
+    }
+  };
+  renderItems(m, items);
   $('#menu-root').append(m);
-  const r = anchor.getBoundingClientRect();
-  let left = Math.min(r.left, innerWidth - m.offsetWidth - 8), top = r.bottom + 4;
-  if (top + m.offsetHeight > innerHeight - 8) top = Math.max(8, r.top - m.offsetHeight - 4);
-  m.style.left = `${Math.max(8, left)}px`; m.style.top = `${top}px`;
-  const btns = $$('button:not([disabled])', m); btns[0]?.focus();
+  const position = () => {
+    const r = anchor.getBoundingClientRect();
+    let left = Math.min(r.left, innerWidth - m.offsetWidth - 8), top = r.bottom + 4;
+    if (top + m.offsetHeight > innerHeight - 8) top = Math.max(8, r.top - m.offsetHeight - 4);
+    m.style.left = `${Math.max(8, left)}px`; m.style.top = `${top}px`;
+  };
+  position();
+  const btns = () => $$('button:not([disabled])', m).filter(b => b.offsetParent !== null);
+  btns()[0]?.focus();
   const key = e => {
     if (e.key === 'Escape') { e.preventDefault(); closeMenu(); anchor.focus?.(); }
-    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); const i = btns.indexOf(document.activeElement); btns[(i + (e.key === 'ArrowDown' ? 1 : -1) + btns.length) % btns.length]?.focus(); }
+    else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') { e.preventDefault(); const list = btns(), i = list.indexOf(document.activeElement); list[(i + (e.key === 'ArrowDown' ? 1 : -1) + list.length) % list.length]?.focus(); }
   };
   const out = e => { if (!m.contains(e.target)) closeMenu(); };
-  setTimeout(() => { document.addEventListener('pointerdown', out, true); document.addEventListener('keydown', key, true); }, 0);
-  menuCleanup = () => { document.removeEventListener('pointerdown', out, true); document.removeEventListener('keydown', key, true); };
+  const cleanup = () => { document.removeEventListener('pointerdown', out, true); document.removeEventListener('keydown', key, true); };
+  menuCleanup = cleanup;
+  setTimeout(() => { if (menuCleanup !== cleanup) return; document.addEventListener('pointerdown', out, true); document.addEventListener('keydown', key, true); }, 0); // not if it was closed meanwhile: those listeners would leak and close the next menu
 }
 
 function showPanel(which, show) {
@@ -2967,7 +3604,8 @@ function renderTopbar() {
   $('#btn-theme .knob').innerHTML = icon(S.ui.theme === 'dark' ? 'moon' : 'sun', 13);
   $('#btn-palette').innerHTML = icon('command', 16);
   $('#btn-more').innerHTML = icon('more', 17);
-  $('#btn-save').innerHTML = `${icon('save', 15)}<span class="hide-xs">Save</span>`;
+  $('#btn-save').title = `${EXT.saveLabel || 'Save workspace'} (Ctrl+S)`;
+  $('#btn-save').innerHTML = `${icon('save', 15)}<span class="hide-xs">${esc(EXT.saveLabel || 'Save')}</span>`;
   $('#btn-export').innerHTML = `${icon('download', 15)}<span class="hide-xs">Export</span>`;
   $('#btn-present').innerHTML = `${icon('play', 14)}Present`;
   $('#btn-reset').innerHTML = icon('home', 17);
@@ -2976,6 +3614,7 @@ function renderTopbar() {
   $('#reopen-left').innerHTML = icon('panelL', 15);
   $('#reopen-right').innerHTML = icon('panelR', 15);
   $('#btn-new-layer').innerHTML = icon('plus', 15);
+  $('#btn-new-group').innerHTML = icon('folderPlus', 15);
   $('#btn-close-left').innerHTML = icon('panelL', 15);
   $('#btn-close-right').innerHTML = icon('panelR', 15);
   $('#btn-close-bottom').innerHTML = icon('x', 15);
@@ -3010,14 +3649,19 @@ function renderStatus() {
 function renderEmpty() {
   const e = $('#empty-state');
   if (S.layers.length || S.ui.hideEmpty) { e.classList.add('hidden'); return; }
+  if (bundleLoading) {
+    e.classList.remove('hidden');
+    e.innerHTML = `<h1>${EXT.loading?.title || `Loading <em>${esc(BUNDLE.name)}</em>…`}</h1><p>${EXT.loading?.text || 'Opening the project delivered with this app. Large projects take up to a minute.'}</p><div class="loadbar" role="progressbar" aria-label="Loading"><i></i></div>`;
+    return;
+  }
   const r = S.restore, rn = r ? (r.ws.layers?.length || 0) + (r.ws.drawings?.length || 0) : 0;
-  e.innerHTML = `<div class="row" style="justify-content:space-between;align-items:flex-start"><h1>Map, edit and <em>share</em> your data</h1><button class="icon-btn sm" data-a="close" title="Hide and just draw" aria-label="Close">${icon('x', 15)}</button></div>
-    <p>Open shapefiles, KML, GeoJSON or CSV. Edit shapes and attributes, add fields, and export back out. Everything stays on this computer.</p>
+  e.innerHTML = `<div class="row" style="justify-content:space-between;align-items:flex-start"><h1>${EXT.empty?.title || 'Map, edit and <em>share</em> your data'}</h1><button class="icon-btn sm" data-a="close" title="Hide and just draw" aria-label="Close">${icon('x', 15)}</button></div>
+    <p>${EXT.empty?.text || 'Open shapefiles, KML, GeoJSON or CSV. Edit shapes and attributes, add fields, and export back out. Everything stays on this computer.'}</p>
     ${r ? `<div class="restore">${icon('clock', 16)}<div>Last session · ${rn} layer${rn > 1 ? 's' : ''} · ${timeAgo(r.savedAt)}</div><button class="btn sm primary" data-a="restore">Restore</button></div>` : ''}
-    <div class="actions"><button class="btn ${r ? '' : 'cta'}" data-a="open">${icon('upload', 15)}Open files</button><button class="btn" data-a="folder">${icon('folder', 15)}Open folder</button><button class="btn" data-a="ws">${icon('save', 15)}Open project</button><button class="btn ghost" data-a="area">${icon('lock', 15)}Set GIS area</button><button class="btn ghost" data-a="sample">${icon('map', 15)}Sample data</button></div>
-    <div class="fmts">${['SHP (.zip)', '.shp+.dbf+.prj', 'KML', 'KMZ', 'GeoJSON', 'CSV'].map(f => `<span class="chip-tag">${f}</span>`).join('')}<span style="font-size:12px;color:var(--ink-subtle);align-self:center;margin-left:2px">or drop files anywhere</span></div>`;
+    <div class="actions"><button class="btn ${r ? '' : 'cta'}" data-a="open">${icon('upload', 15)}Open files</button><button class="btn" data-a="folder">${icon('folder', 15)}Open folder</button><button class="btn" data-a="ws">${icon('save', 15)}Open project</button><button class="btn ghost" data-a="area">${icon('lock', 15)}Set GIS area</button><button class="btn ghost" data-a="tour">${icon('play', 15)}Take a tour</button></div>
+    <div class="fmts">${['SHP (.zip)', '.shp+.dbf+.prj', 'KML', 'KMZ', 'GeoJSON', 'CSV', 'DWG'].map(f => `<span class="chip-tag">${f}</span>`).join('')}<span style="font-size:12px;color:var(--ink-subtle);align-self:center;margin-left:2px">or drop files anywhere</span></div>`;
   const A = (a, fn) => { const b = e.querySelector(`[data-a=${a}]`); if (b) b.onclick = fn; };
-  A('open', pickFiles); A('folder', openFolder); A('ws', openWorkspacePicker); A('sample', loadSamples); A('restore', restoreSession);
+  A('open', pickFiles); A('folder', openFolder); A('ws', openWorkspacePicker); A('tour', openTours); A('restore', restoreSession);
   A('area', ev => areaMenu(ev.currentTarget));
   A('close', () => { S.ui.hideEmpty = true; renderEmpty(); });
   e.classList.remove('hidden');
@@ -3025,8 +3669,8 @@ function renderEmpty() {
 function moreMenu(anchor) {
   openMenu(anchor, [
     { label: 'Open workspace…', icon: 'folder', fn: openWorkspacePicker },
-    { label: 'Save workspace', icon: 'save', sc: 'Ctrl+S', fn: () => saveWorkspace() },
-    { label: 'Save workspace as…', icon: 'save', sc: 'Ctrl+Shift+S', fn: () => saveWorkspace(true) },
+    { label: EXT.saveLabel || 'Save workspace', icon: 'save', sc: 'Ctrl+S', fn: runSaveAction },
+    { label: 'Save full workspace as…', icon: 'save', sc: 'Ctrl+Shift+S', fn: () => saveWorkspace(true) },
     { label: 'Save project package (.zip)…', icon: 'folder', fn: packageWizard },
     { label: 'Open folder…', icon: 'folder', fn: openFolder },
     { label: 'New workspace', icon: 'plus', fn: newWorkspace },
@@ -3034,11 +3678,12 @@ function moreMenu(anchor) {
     { label: 'New empty layer…', icon: 'plus', fn: newEmptyLayer },
     { label: 'Export…', icon: 'download', sc: 'Shift+E', fn: exportCenter },
     { label: 'Present…', icon: 'play', sc: 'Shift+P', fn: presentDialog },
-    { label: 'Load sample data', icon: 'map', fn: loadSamples },
     { label: 'Settings…', icon: 'style', fn: settingsDialog },
     { sep: true },
     { label: 'Snap to vertices', checked: S.ui.snap, fn: () => { S.ui.snap = !S.ui.snap; saveSettings(); toast('info', S.ui.snap ? 'Snapping on' : 'Snapping off'); } },
     { label: 'Command palette', icon: 'command', sc: 'Ctrl+K', fn: openPalette },
+    BUNDLE && { label: `Reload the original “${BUNDLE.name}”`, icon: 'undo', fn: async () => { if (await confirmDialog('Reload the original project?', 'Your changes and proposals in this session are replaced by the project as delivered.', 'Reload')) { S.workspace.dirty = false; openBundle(); } } },
+    { label: 'Guided tours…', icon: 'play', fn: openTours },
     { label: 'Keyboard shortcuts', icon: 'command', sc: '?', fn: showShortcuts },
     { label: 'About', icon: 'info', fn: showAbout },
   ]);
@@ -3048,18 +3693,133 @@ async function newWorkspace() {
   loadWorkspace({ app: 'Atlas', schemaVersion: CFG.SCHEMA_VERSION, name: 'Untitled workspace', layers: [], view: { center: CFG.world.center, zoom: CFG.world.zoom, mode: '2d' }, ui: { theme: S.ui.theme, basemap: S.ui.basemap, basemapAuto: S.ui.basemapAuto } }, { fromAutosave: true });
   S.ui.hideEmpty = false; renderEmpty();
 }
-const SHORTCUTS = [['Command palette', 'Ctrl/⌘ K'], ['Open files', 'Ctrl O'], ['Save workspace / Save as', 'Ctrl S / Ctrl Shift S'], ['Undo / Redo', 'Ctrl Z / Ctrl Shift Z'],
+/* Drag handles on the panel edges set the --left-w / --right-w / --bottom-h tokens; sizes are remembered per browser */
+const SIZES = { '--left-w': [200, 600], '--right-w': [260, 680], '--bottom-h': [120, 0.8] }; // [min px, max px or share of window height]
+function setSize(v, px) {
+  const [lo, hi] = SIZES[v], max = hi < 1 ? innerHeight * hi : hi;
+  px = Math.round(Math.min(max, Math.max(lo, px)));
+  document.documentElement.style.setProperty(v, px + 'px');
+  try { localStorage.setItem('atlas' + v, px); } catch (e) {}
+}
+function initResizers() {
+  for (const v of Object.keys(SIZES)) { try { const px = +localStorage.getItem('atlas' + v); if (px) setSize(v, px); } catch (e) {} }
+  $$('.rsz').forEach(h => {
+    const v = h.dataset.v, edge = h.dataset.edge, cur = () => parseFloat(getComputedStyle(document.documentElement).getPropertyValue(v));
+    h.onpointerdown = e => {
+      e.preventDefault(); h.setPointerCapture(e.pointerId); h.classList.add('on'); document.body.classList.add('resizing');
+      const x0 = e.clientX, y0 = e.clientY, s0 = cur();
+      h.onpointermove = m => setSize(v, s0 + (edge === 'r' ? m.clientX - x0 : edge === 'l' ? x0 - m.clientX : y0 - m.clientY));
+      h.onpointerup = h.onpointercancel = () => { h.onpointermove = null; h.classList.remove('on'); document.body.classList.remove('resizing'); };
+    };
+    h.ondblclick = () => { document.documentElement.style.removeProperty(v); try { localStorage.removeItem('atlas' + v); } catch (e) {} };
+    h.onkeydown = e => { // arrows grow/shrink by 16px in the direction the edge moves
+      const d = { r: { ArrowRight: 16, ArrowLeft: -16 }, l: { ArrowLeft: 16, ArrowRight: -16 }, t: { ArrowUp: 16, ArrowDown: -16 } }[edge][e.key];
+      if (d) { e.preventDefault(); setSize(v, cur() + d); }
+    };
+  });
+}
+const SHORTCUTS = [['Command palette', 'Ctrl/⌘ K'], ['Open files', 'Ctrl O'], ['Save / Save full workspace as', 'Ctrl S / Ctrl Shift S'], ['Undo / Redo', 'Ctrl Z / Ctrl Shift Z'],
   ['Pan & select', 'V'], ['Polygon · Rectangle · Circle', 'P · R · C'], ['Line · Point · Freehand', 'L · M · H'], ['Measure distance / area', 'D / A'],
   ['Select more', 'Shift click'], ['Edit shape of selected', 'E or double-click'], ['Delete selected features', 'Delete'], ['Zoom to selection', 'F'], ['Buffer selected', 'B'],
   ['Finish measure or edit', 'Enter'], ['Cancel / deselect', 'Esc'], ['Previous extent', 'Alt ←'], ['Zoom to GIS area or data', 'Home'],
   ['Export / Present', 'Shift E / Shift P'], ['Toggle 2D / 3D', '3'], ['Toggle theme', 'T'], ['Toggle layers / inspector / table', '[ / ] / \\'], ['This list', '?']];
+/* Guided tours: each step spotlights one control (el = selector; missing → centered card) and explains the ways to use it */
+const BASE_TOURS = [
+  { id: 'nav', icon: 'map', title: 'Navigate the map', desc: 'Pan, zoom, 2D/3D, saved views, the GIS area and finding anything.', steps: [
+    { el: '#map', title: 'Move around', text: 'Drag to pan, scroll to zoom. <b>Right-drag</b> or <b>Ctrl-drag</b> rotates and tilts. <kbd>Home</kbd> zooms to the GIS area or all data; <kbd>Alt ←</kbd> goes back to the previous view.' },
+    { el: '#seg-mode', title: '2D or 3D', text: 'Switch between a flat map and a tilted 3D view (<kbd>3</kbd>). Polygons can be extruded in 3D from <i>Style & labels</i>.' },
+    { el: '#btn-views', title: 'Saved views', text: `Save the current extent as a named view and jump back to it later.${EXT.defaultView ? ` <b>${EXT.defaultView.name}</b> is built in and can’t be deleted; <kbd>Home</kbd> returns to it.` : ''} Views are also the slides in <i>Present</i>.` },
+    { el: '#btn-area', title: 'GIS area', text: 'Lock the map to a project area so panning stays focused, and optionally dim everything outside it. Unlock any time.' },
+    { el: '#btn-basemap', title: 'Basemap', text: 'Pick Dark, Light, Streets or Imagery. Your data draws on top of any of them.' },
+    { el: '#coords', title: 'Coordinates', text: 'The cursor position. Click it to choose WGS84 decimal degrees, degrees-minutes-seconds, Web Mercator or Illinois East (US ft).' },
+    { el: '#btn-palette', title: 'Find anything', text: 'Press <kbd>Ctrl K</kbd> to search every command, layer and feature by name, then press Enter to go there.' },
+  ] },
+  { id: 'draw', icon: 'polygon', title: 'Create shapes', desc: 'Draw polygons, lines and points, then reshape them.', steps: [
+    { el: '#layer-list', title: 'Pick the target layer', text: 'New shapes go into the highlighted <b>Target</b> layer. Click a layer row to make it the target, or use <i>New layer</i> (+) for an empty one. Drawing with no layers creates “Sketch”.' },
+    { el: '#draw-toolbar', title: 'Choose a tool', text: 'Polygon <kbd>P</kbd>, rectangle <kbd>R</kbd>, circle <kbd>C</kbd>, line <kbd>L</kbd>, point <kbd>M</kbd> or freehand <kbd>H</kbd>. Polygons and lines: click to add vertices, then click the last point again to finish. Rectangles and circles: click, move, click. <kbd>Esc</kbd> cancels.' },
+    { el: '#map', title: 'Reshape a shape', text: '<b>Double-click</b> a feature (or select it and press <kbd>E</kbd>) to drag its vertices. Vertices snap to nearby vertices (toggle under <i>More</i>). <kbd>Enter</kbd> saves, <kbd>Esc</kbd> discards.' },
+    { el: '#draw-toolbar', title: 'Undo anything', text: 'Every edit can be undone with <kbd>Ctrl Z</kbd> and redone with <kbd>Ctrl Shift Z</kbd>, or the arrows at the bottom of this toolbar.' },
+  ] },
+  { id: 'attrs', icon: 'table', title: 'Edit attributes', desc: 'Inspect features, edit values, add and retype fields.', steps: [
+    { el: '#right', title: 'Inspector', text: 'Click a feature on the map to see its attributes here and edit them directly. <b>Shift-click</b> selects more than one.', before: () => showPanel('right', true) },
+    { el: '#bottom', title: 'Attribute table', text: 'All features of a layer as rows. <b>Double-click a cell</b> to edit it, Enter to save. Search filters the rows; clicking a row selects it on the map. Toggle with <kbd>\\</kbd>.', before: () => { const l = S.layers.find(x => x.id === S.ui.activeLayer) || S.layers[0]; if (l) openTable(l); else showPanel('bottom', true); } },
+    { el: '#tb-add', title: 'Add a field', text: '<b>+ Field</b> adds a column with a type (text, number, date, yes/no) and an optional value for every row.' },
+    { el: '#layer-list', title: 'Manage fields', text: 'In a layer’s menu (⋯ or right-click), <i>Fields…</i> renames, retypes or deletes fields. The ⋯ button on a table column header has the same options.' },
+  ] },
+  { id: 'groups', icon: 'folder', title: 'Layers & groups', desc: 'Order layers, build nested groups, focus on what matters.', steps: [
+    { el: '#layer-list', title: 'Layers', text: 'The eye shows or hides a layer. <b>Drag</b> rows to change the draw order (top draws on top). The ⋯ menu or right-click has everything else: zoom, style, table, export.', before: () => showPanel('left', true) },
+    { el: '#layer-list', title: 'Make a group', text: 'The <b>folder +</b> button at the top of this panel creates an empty group; <i>New group inside…</i> in a group’s menu adds a sub-group. A layer’s menu also has <i>New group…</i>. Fill groups by dragging layers onto the header or with <i>Move to “group”</i>. DWG imports are grouped automatically.' },
+    { el: '#layer-list', title: 'Groups inside groups', text: 'Drag a group header onto another group header to nest it. <i>New group inside “…”</i> in a layer menu creates a sub-group directly. <i>Move out to top level</i> and <i>Ungroup</i> undo it.' },
+    { el: '#layer-list', title: 'Group tools', text: 'The group eye shows or hides every layer inside. The group menu has <i>Focus</i>, <i>Zoom to group</i>, <i>Appearance…</i> (icon and color), rename and remove. The arrow collapses it.' },
+    { el: '#layer-list', title: 'Focus', text: '<i>Focus on this layer / group</i> turns every other layer one flat grey so you can read the one you care about. <b>Show all</b> in the bar at the top brings everything back unchanged.' },
+  ] },
+  { id: 'style', icon: 'style', title: 'Symbology', desc: 'Color by attribute, hide categories, restyle single values.', steps: [
+    { el: '#layer-list', title: 'Color by attribute', text: 'Layer menu → <i>Style & labels…</i> → <i>Color by attribute</i> colors each value differently. The <b>Categories</b> table there sets color, width and opacity per value.', before: () => showPanel('left', true) },
+    { el: '#layer-list', title: 'Hide values', text: 'Under a layer, <b>click a category</b> to hide or show it on the map. The arrow next to the layer folds its list away.' },
+    { el: '#layer-list', title: 'Restyle a value', text: '<b>Right-click a category</b> for a new color, a custom color, solid or dashed lines, thicker or thinner lines, <i>Show only this</i> and reset.' },
+    { el: '#map-legend', title: 'Legend', text: 'The on-map legend follows your symbology and is included in map prints. Collapse it with its header.' },
+  ] },
+  { id: 'io', icon: 'download', title: 'Import & export', desc: 'Open SHP, KML, GeoJSON, CSV and DWG; save and share.', steps: [
+    { el: '#btn-open', title: 'Open data', text: 'Open shapefiles (.zip or .shp+.dbf+.prj), KML/KMZ, GeoJSON, CSV and AutoCAD <b>DWG</b>, or drop files anywhere on the window. Projected data asks for its coordinate system if it has no .prj.' },
+    { el: '#btn-open-folder', title: 'Folders', text: 'Open a whole folder (Chrome/Edge) to load every dataset in it, including shapefile parts in sub-folders.' },
+    { el: '#btn-save', title: 'Save the project', text: '<kbd>Ctrl S</kbd> saves layers, edits, styles, groups and views to an .atlas.json file. Atlas also autosaves in this browser.' },
+    { el: '#btn-export', title: 'Export & share', text: 'Map prints (PDF/PNG), data exports (SHP, GeoJSON, KML, CSV), project packages and presentations. Each is a few quick steps; empty boxes use the grey suggestion.' },
+  ] },
+];
+const TOURS = EXT.tours?.(BASE_TOURS) || BASE_TOURS; // an extension can replace or reorder the guided tours
+function openTours() {
+  const body = el(`<div class="cards">${TOURS.map(t => `<button class="card texture" data-t="${t.id}"><span class="ci">${icon(t.icon, 20)}</span><b>${esc(t.title)}</b><span>${esc(t.desc)} · ${t.steps.length} steps</span></button>`).join('')}</div>`);
+  modal({ title: 'Guided tours', sub: 'Short walkthroughs of how Atlas works. Pick one; Esc ends a tour.', body, ok: 'Close', cancel: null, wide: true });
+  body.querySelectorAll('.card').forEach(c => c.onclick = () => { $('#modal-root .scrim:last-child [data-x]')?.click(); runTour(TOURS.find(t => t.id === c.dataset.t)); });
+}
+function runTour(t, i = 0) {
+  $('#tour')?.remove();
+  const s = t.steps[i]; if (!s) return;
+  try { s.before?.(); } catch (e) {}
+  const box = el(`<div id="tour" role="dialog" aria-modal="false" aria-label="${esc(t.title)}"><div class="tour-spot"></div><div class="tour-card texture">
+    <div class="tour-k">${esc(t.title)} · ${i + 1} / ${t.steps.length}</div><h4>${esc(s.title)}</h4><p>${s.text}</p>
+    <div class="tour-foot"><button class="btn sm ghost" data-a="end">End tour</button><span></span>${i ? '<button class="btn sm" data-a="back">Back</button>' : ''}<button class="btn sm primary" data-a="next">${i === t.steps.length - 1 ? 'Done' : 'Next'}</button></div></div></div>`);
+  document.body.append(box);
+  const card = box.querySelector('.tour-card'), spot = box.querySelector('.tour-spot');
+  const end = () => { box.remove(); document.removeEventListener('keydown', key, true); removeEventListener('resize', place); };
+  const go = j => { end(); if (j >= 0 && j < t.steps.length) runTour(t, j); };
+  const key = e => {
+    if (e.key === 'Escape') { e.stopPropagation(); end(); return; }
+    if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName) || e.target.isContentEditable) return; // typing while a tour is open
+    if (e.key === 'ArrowRight') go(i + 1); else if (e.key === 'ArrowLeft' && i) go(i - 1);
+  };
+  function place() { // spotlight the target and put the card beside it, inside the window
+    const tg = s.el && $(s.el), r = tg && tg.getClientRects().length ? tg.getBoundingClientRect() : null, W = innerWidth, H = innerHeight, cw = card.offsetWidth, ch = card.offsetHeight;
+    spot.classList.toggle('hidden', !r);
+    if (!r) { card.style.left = `${(W - cw) / 2}px`; card.style.top = `${(H - ch) / 2}px`; return; }
+    Object.assign(spot.style, { left: `${r.left - 4}px`, top: `${r.top - 4}px`, width: `${r.width + 8}px`, height: `${r.height + 8}px` });
+    const fits = { right: W - r.right > cw + 24, left: r.left > cw + 24, below: H - r.bottom > ch + 24 };
+    const x = fits.right ? r.right + 16 : fits.left ? r.left - cw - 16 : Math.min(W - cw - 12, Math.max(12, r.left + r.width / 2 - cw / 2));
+    const y = fits.right || fits.left ? Math.min(H - ch - 12, Math.max(12, r.top + Math.min(r.height, 200) / 2 - ch / 2)) : fits.below ? r.bottom + 16 : Math.max(12, r.top - ch - 16);
+    card.style.left = `${x}px`; card.style.top = `${y}px`;
+  }
+  box.querySelector('[data-a=next]').onclick = () => go(i + 1);
+  box.querySelector('[data-a=end]').onclick = end;
+  box.querySelector('[data-a=back]')?.addEventListener('click', () => go(i - 1));
+  document.addEventListener('keydown', key, true); addEventListener('resize', place);
+  requestAnimationFrame(place);
+  box.querySelector('[data-a=next]').focus();
+}
+function helpMenu(anchor) {
+  openMenu(anchor, [
+    { label: 'Guided tours…', icon: 'play', fn: openTours },
+    ...TOURS.map(t => ({ label: t.title, icon: t.icon, fn: () => runTour(t) })),
+    { sep: true },
+    { label: 'Keyboard shortcuts', icon: 'command', sc: '?', fn: showShortcuts },
+  ]);
+}
 function showShortcuts() { modal({ title: 'Keyboard shortcuts', body: el(`<div class="shortcuts">${SHORTCUTS.map(([a, k]) => `<div>${esc(a)}</div><div>${k.split(' / ').map(x => `<kbd>${esc(x)}</kbd>`).join(' / ')}</div>`).join('')}</div>`), ok: 'Close', cancel: null }); }
 function showAbout() {
   modal({ title: 'Atlas', ok: 'Close', cancel: null, body: el(`<div style="font-size:13px;color:var(--ink-muted)">
     <p style="margin-top:0">A fast, browser-only GIS: open shapefiles, KML, GeoJSON and CSV, edit shapes and attributes, add fields, measure, buffer, print and export.</p>
     <p><b style="color:var(--ink)">Your data never leaves this computer.</b> Files are read locally; the only network requests are for map libraries, basemap and terrain tiles.</p>
     <p><b style="color:var(--ink)">Not survey grade</b> — not a substitute for formal GIS/CAD review.</p>
-    <p class="mono" style="font-size:11px;color:var(--ink-subtle)">MapLibre GL 5.24.0 · Terra Draw 1.36.0 · Turf 7.4.0 · shpjs 6.2.0 · togeojson 7.1.2 · JSZip 3.10.2 · PapaParse 5.7.0 · proj4 2.22.0 · Workspace schema v${CFG.SCHEMA_VERSION}</p></div>`) });
+    <p class="mono" style="font-size:11px;color:var(--ink-subtle)">MapLibre GL 5.24.0 · Terra Draw 1.36.0 · Turf 7.4.0 · shpjs 6.2.0 · togeojson 7.1.2 · JSZip 3.10.2 · PapaParse 5.7.0 · proj4 2.22.0 · libredwg-web 0.8.1 · Workspace schema v${CFG.SCHEMA_VERSION}</p></div>`) });
 }
 
 function openPalette() {
@@ -3067,8 +3827,8 @@ function openPalette() {
   const A = (label, ic, sc, fn, grp = 'Actions') => ({ label, ic, sc, fn, grp });
   const sl = layerById(S.ui.activeLayer);
   const base = [
-    A('Open files…', 'upload', 'Ctrl+O', pickFiles), A('Open workspace…', 'folder', '', openWorkspacePicker), A('Save workspace', 'save', 'Ctrl+S', () => saveWorkspace()),
-    A('Save workspace as…', 'save', '', () => saveWorkspace(true)), A('New empty layer…', 'plus', '', newEmptyLayer),
+    A('Open files…', 'upload', 'Ctrl+O', pickFiles), A('Open workspace…', 'folder', '', openWorkspacePicker), A(EXT.saveLabel || 'Save workspace', 'save', 'Ctrl+S', runSaveAction),
+    A('Save full workspace as…', 'save', '', () => saveWorkspace(true)), A('New empty layer…', 'plus', '', newEmptyLayer),
     A('Measure distance', 'ruler', 'D', () => startMeasure('measure-dist')), A('Measure area', 'area', 'A', () => startMeasure('measure-area')),
     ...DRAW_MODES.map(m => A(`Draw ${SHAPE_LABEL[m].toLowerCase()}`, TOOL_ICON[m], Object.keys(TOOL_KEYS).find(k => TOOL_KEYS[k] === m).toUpperCase(), () => setTool(m))),
     A('Toggle 2D / 3D', 'layers', '3', () => setMode(S.ui.mode === '3d' ? '2d' : '3d')),
@@ -3080,11 +3840,12 @@ function openPalette() {
     ...[...CFG.presetAreas, ...S.areas].map(a => A(`GIS area: ${a.name}`, 'lock', '', () => setArea(clone(a)), 'Areas')),
     A('Open attribute table', 'table', '\\', () => showPanel('bottom', true)),
     ...(sl ? [A(`Add field to “${sl.name}”…`, 'plus', '', () => addFieldDialog(sl)), A(`Fields of “${sl.name}”…`, 'fields', '', () => fieldsDialog(sl))] : []),
-    A('Load sample data', 'map', '', loadSamples), A('Export…', 'download', 'Shift+E', exportCenter), A('Map print…', 'map', '', () => exhibitWizard()),
+    A('Export…', 'download', 'Shift+E', exportCenter), A('Map print…', 'map', '', () => exhibitWizard()),
     A('Data export…', 'download', '', dataExportWizard), A('Project package (.zip)…', 'folder', '', packageWizard), A('Open folder…', 'folder', '', openFolder), A('Copy map image', 'copy', '', copyMapImage), A('Present…', 'play', 'Shift+P', presentDialog),
     A('Settings…', 'style', '', settingsDialog), A('Toggle performance mode', 'zap', '', () => setPerf(!S.ui.perf)), A('Toggle snapping', 'target', '', () => { S.ui.snap = !S.ui.snap; saveSettings(); toast('info', S.ui.snap ? 'Snapping on' : 'Snapping off'); }),
-    A('Keyboard shortcuts', 'command', '?', showShortcuts),
+    A('Keyboard shortcuts', 'command', '?', showShortcuts), A('Guided tours…', 'play', '', openTours), ...TOURS.map(t => A(`Tour: ${t.title}`, t.icon, '', () => runTour(t))),
     ...Object.entries(CFG.basemaps).map(([k, v]) => A(`Basemap: ${v.label}`, 'map', '', () => setBasemap(k), 'Basemaps')),
+    ...(EXT.defaultView ? [A(`${EXT.defaultView.name} (default)`, 'home', 'Home', goDefaultView, 'Views')] : []),
     ...S.presets.views.map(v => A(v.name, 'bookmark', '', () => applyView(v), 'Views')),
     ...S.layers.map(l => A(`${l.visible ? 'Hide' : 'Show'} ${l.name}`, l.visible ? 'eyeOff' : 'eye', '', () => { l.visible = !l.visible; syncAllLayers(); changed('layers'); }, 'Layers')),
   ];
@@ -3126,6 +3887,7 @@ function bindStatic() {
   $('#reopen-left').onclick = () => showPanel('left', true);
   $('#reopen-right').onclick = () => showPanel('right', true);
   $('#btn-new-layer').onclick = newEmptyLayer;
+  $('#btn-new-group').onclick = () => newEmptyGroup();
   $('#btn-views').onclick = e => viewsMenu(e.currentTarget);
   $('#btn-area').onclick = e => areaMenu(e.currentTarget);
   $('#btn-measure').onclick = e => openMenu(e.currentTarget, [{ label: 'Measure distance', icon: 'ruler', sc: 'D', fn: () => startMeasure('measure-dist') }, { label: 'Measure area', icon: 'area', sc: 'A', fn: () => startMeasure('measure-area') }, measure.mode && { label: 'Clear measurement', icon: 'x', sc: 'Esc', fn: cancelMeasure }]);
@@ -3138,8 +3900,9 @@ function bindStatic() {
   $$('#seg-mode button').forEach(b => b.onclick = () => setMode(b.dataset.mode));
   $('#btn-theme').onclick = () => setTheme(S.ui.theme === 'dark' ? 'light' : 'dark');
   $('#btn-palette').onclick = openPalette;
+  initResizers();
   $('#btn-more').onclick = e => moreMenu(e.currentTarget);
-  $('#btn-save').onclick = () => saveWorkspace();
+  $('#btn-save').onclick = runSaveAction;
   $('#btn-export').onclick = exportCenter;
   $('#btn-present').onclick = presentDialog;
   $('#btn-reset').onclick = homeView;
@@ -3150,7 +3913,7 @@ function bindStatic() {
   $('#sb-left').onclick = () => showPanel('left');
   $('#sb-right').onclick = () => showPanel('right');
   $('#sb-table').onclick = () => showPanel('bottom');
-  $('#sb-help').onclick = showShortcuts;
+  $('#sb-help').onclick = e => helpMenu(e.currentTarget);
   $('#file-input').onchange = e => { handleFiles(e.target.files); e.target.value = ''; };
   $('#ws-input').onchange = e => { if (e.target.files[0]) openWorkspaceFile(e.target.files[0]); e.target.value = ''; };
   const wsn = $('#ws-name');
@@ -3182,7 +3945,7 @@ function bindStatic() {
     }
     if (mod && lk === 'k') { e.preventDefault(); openPalette(); return; }
     if ($('#modal-root').children.length) return;
-    if (mod && lk === 's') { e.preventDefault(); saveWorkspace(e.shiftKey); return; }
+    if (mod && lk === 's') { e.preventDefault(); e.shiftKey ? saveWorkspace(true) : runSaveAction(); return; }
     if (mod && lk === 'o') { e.preventDefault(); pickFiles(); return; }
     if (isTyping(e)) return;
     if (mod && lk === 'z') { e.preventDefault(); e.shiftKey ? redo() : undo(); return; }
@@ -3231,7 +3994,15 @@ function boot() {
   emit('ui', 'layers', 'workspace');
   checkAutosave();
   window.__atlasBooted = true;
-  window.Atlas = { S, get map() { return map; }, handleFiles, shpDirs, makePackage, serialize, loadWorkspace, migrate, makeExhibit, makeDataExport, PAGES, addField, renameField, retypeField, setValues, deleteFeatures, explodeFeatures, setArea, select, undo, redo }; // for debugging & smoke tests
+  window.Atlas = { S, get map() { return map; }, handleFiles, shpDirs, makePackage, serialize, loadWorkspace, migrate, saveWorkspaceData, getBundleLayerIds: () => bundleLayerIdsKnown ? new Set(bundleLayerIds) : null, get bundleId() { return BUNDLE?.id || null; }, makeExhibit, makeDataExport, PAGES, addField, renameField, retypeField, setValues, deleteFeatures, explodeFeatures, setArea, select, undo, redo, // for debugging & smoke tests
+    // the extension API (EXT.onBoot) also gets these
+    on, emit, changed, syncLayer, syncAllLayers, setGroup, setFocus, showPanel, modal, openMenu, toast, el, icon, esc, newLayer, addLayer, layerById, featureOf, featureName, measureText, fitBbox, canEdit };
+  if (EXT.brand) {
+    document.title = EXT.brand.title || EXT.brand.name; $('.brand-name').textContent = EXT.brand.name;
+    if (EXT.brand.mark) $('.brand-mark').innerHTML = EXT.brand.mark; // trusted markup from the extension build, not user data
+    if (EXT.brand.icon) $('link[rel=icon]').href = EXT.brand.icon;
+  }
+  try { EXT.onBoot?.(window.Atlas); } catch (e) { console.error('extension failed to start', e); }
 }
 boot();
 </script>

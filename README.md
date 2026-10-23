@@ -1,12 +1,12 @@
 # Atlas
 
-A simple, fast, **browser-only GIS**. Open shapefiles, KML/KMZ, GeoJSON and CSV, then edit shapes **and** attribute tables, add fields, measure, buffer, print and export. Everything is one `index.html`. There's nothing to install and no server, and your data never leaves your computer.
+A simple, fast, **browser-only GIS**. Open shapefiles, KML/KMZ, GeoJSON, CSV and AutoCAD DWG, then edit shapes **and** attribute tables, add fields, measure, buffer, print and export. Everything is one `dist/Atlas-GIS.html`. There's nothing to install and no server, and your data never leaves your computer.
 
 ![Editing a shape with the attribute table and inspector](docs/img/atlas-editing.png)
 
 ## Run it
 1. Download or clone this repo.
-2. **Double-click `index.html`.** Chrome or Edge is recommended (it needs an internet connection for the map libraries and basemaps).
+2. **Double-click `dist/Atlas-GIS.html`.** Chrome or Edge is recommended (it needs an internet connection for the map libraries and basemaps).
 3. Click **Open**, or drop files anywhere on the map.
 
 ## What you can do
@@ -39,7 +39,7 @@ Press `Ctrl+K` for the command palette, or `?` for keyboard shortcuts.
 Files are read locally. The only network requests are for the pinned map libraries (jsDelivr), basemap tiles (OpenFreeMap, Esri imagery), terrain tiles (AWS) and fonts (Google Fonts). There's no analytics.
 
 ## Development
-- The app is `index.html`. Read `CLAUDE.md`, `PRD.md` (requirements, FR IDs) and `DESIGN.md` (tokens and component recipes) before changing it.
+- The app is `dist/Atlas-GIS.html`. Read `CLAUDE.md`, `PRD.md` (requirements, FR IDs) and `DESIGN.md` (tokens and component recipes) before changing it.
 - Unit tests: `node --test tests/`
 - Browser smoke test over `file://`: `npm i --no-save playwright-core && node tests/smoke.browser.mjs` (needs a Playwright Chromium install).
 - Synthetic sample data: `samples/`, regenerated with `node scripts/make-samples.mjs`.

@@ -1,10 +1,10 @@
-// Unit tests for the field-type logic in index.html (between the <fields-logic> markers).
+// Unit tests for the field-type logic in dist/Atlas-GIS.html (between the <fields-logic> markers).
 // Run: node --test tests/
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 
-const html = readFileSync(new URL('../index.html', import.meta.url), 'utf8');
+const html = readFileSync(new URL('../dist/Atlas-GIS.html', import.meta.url), 'utf8');
 const src = html.split('// <fields-logic>')[1].split('// </fields-logic>')[0];
 const toNum = v => { const n = typeof v === 'number' ? v : parseFloat(String(v ?? '').replace(/,/g, '')); return isFinite(n) ? n : null; };
 const { inferType, inferFields, coerce, validFieldName, shpFieldNames } =
